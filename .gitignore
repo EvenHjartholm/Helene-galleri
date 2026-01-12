@@ -1,0 +1,35 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Images (only keep thumbs in git)
+public/images/original
+public/images/large
+*.jpg
+*.jpeg
+*.png
+*.PNG
+!public/images/thumbs/*.jpg
+!public/images/thumbs/*.jpeg
+!public/images/thumbs/*.png
