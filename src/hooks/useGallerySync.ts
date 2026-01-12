@@ -38,7 +38,7 @@ export function toThumb(publicUrl: string, w = 400, q = 65) {
   return `${renderBase}?width=${w}&quality=${q}&resize=contain`;
 }
 
-export function toLarge(publicUrl: string, w = 1600, q = 80) {
+export function toLarge(publicUrl: string) {
    // Keep large images as direct object URLs for now to avoid any re-compression artifacts/issues on full screen
    // We already optimized them to 1600px on upload via "Turbo" mode.
   return publicUrl;
@@ -101,7 +101,7 @@ async function listAllFilesInBucket() {
     if (error) throw error;
     if (!data || data.length === 0) break;
 
-    all = all.concat(data.map((f: any) => ({ name: f.name, created_at: f.created_at })));
+    all = all.concat(data.map((f: { name: string; created_at: string }) => ({ name: f.name, created_at: f.created_at })));
     offset += limit;
     if (data.length < limit) break;
   }
@@ -275,11 +275,10 @@ export function useGallerySync() {
       
       // STEG B: Upload Local Images
       // ✅ Use structuredClone instead (keeps File objects alive)
-      let updatedPages = structuredClone(repairedPages) as Page[];
+      const updatedPages = structuredClone(repairedPages) as Page[];
       let uploadCount = 0;
 
       // Count local images first for progress
-      const localImages = updatedPages.flatMap(p => p.items).filter(i => i.type === 'image' && i.largeUrl.startsWith('/images/'));
       let processedLocal = 0;
 
       for (const page of updatedPages) {
