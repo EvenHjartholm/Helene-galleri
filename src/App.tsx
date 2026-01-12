@@ -4,7 +4,7 @@ import { X, ChevronLeft, ChevronRight, Download, Lock, Plus, Trash2, Save, Align
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { supabase } from './lib/supabase';
-import { useGallerySync, toThumb, toLarge, getTinyUrl } from './hooks/useGallerySync';
+import { useGallerySync, getTinyUrl } from './hooks/useGallerySync';
 import type { Page, GalleryItem, ImageItem, TextItem, TextSize } from './types';
 import { 
   DndContext, 
@@ -914,20 +914,10 @@ function GalleryView({
 
 
   
-  // Guard clause for safety
   const currentPage = pages[currentPageIndex];
-  if (!currentPage) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center text-gray-500">
-         <p>Fant ingen side på denne indeksen.</p>
-         <button onClick={() => onChangePage(0)} className="mt-4 px-4 py-2 bg-gray-900 text-white rounded">Gå til start</button>
-      </div>
-    );
-  }
-
-  const items = currentPage.items;
+  const items = currentPage?.items || [];
   const imageItems = items.filter((item): item is ImageItem => item.type === 'image');
-  
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -939,7 +929,7 @@ function GalleryView({
   };
   
   const closeLightbox = () => setLightboxIndex(null);
-  
+
   const nextImage = useCallback(() => {
     setLightboxIndex(prev => prev === null ? null : (prev + 1) % imageItems.length);
   }, [imageItems.length]);
@@ -947,6 +937,16 @@ function GalleryView({
   const prevImage = useCallback(() => {
     setLightboxIndex(prev => prev === null ? null : (prev - 1 + imageItems.length) % imageItems.length);
   }, [imageItems.length]);
+
+  // Guard clause moved AFTER hooks to satisfy Rules of Hooks
+  if (!currentPage) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center text-gray-500">
+         <p>Fant ingen side på denne indeksen.</p>
+         <button onClick={() => onChangePage(0)} className="mt-4 px-4 py-2 bg-gray-900 text-white rounded">Gå til start</button>
+      </div>
+    );
+  }
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -1234,7 +1234,7 @@ export default function App() {
         .single();
 
       if (data?.data) {
-        let cloudPages = data.data as Page[];
+        const cloudPages = data.data as Page[];
         // AUTO-RESOLVE: Always prefer cloud data (Admin request)
         console.log("Loading from cloud (forcing cloud-first).");
         if (Array.isArray(cloudPages)) {
