@@ -22,20 +22,23 @@ async function inspectContent() {
   const pages = data.data;
   console.log(`Found ${pages.length} pages.`);
 
-  if (pages.length > 1) {
-    console.log("--- PAGE 2 CONTENTS ---");
-    const page2 = pages[1];
-    page2.items.forEach(item => {
+  if (pages.length > 0) {
+    console.log("--- PAGE 1 CONTENTS ---");
+    const page1 = pages[0];
+    page1.items.forEach((item, index) => {
       if (item.type === 'image') {
-        console.log(`ID: ${item.id}`);
+        console.log(`[Item ${index}] ID: ${item.id}`);
         console.log(` - Original URL: ${item.originalUrl}`);
         console.log(` - Large URL:    ${item.largeUrl}`);
         console.log(` - StorageName:  ${item.storageName || 'NONE'}`);
         console.log("---------------------------------------------------");
+      } else {
+        console.log(`[Item ${index}] TEXT ITEM`);
+        console.log("---------------------------------------------------");
       }
     });
   } else {
-    console.log("Page 2 does not exist in DB data.");
+    console.log("Page 1 does not exist in DB data.");
   }
 }
 

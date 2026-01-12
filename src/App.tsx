@@ -218,7 +218,7 @@ function AddImageModal({
                      )}
                    >
                      <img 
-                       src={`/images/thumbs/${imgName}`} 
+                       src={`images/thumbs/${imgName}`} 
                        className="w-full h-full object-cover" 
                        loading="lazy"
                      />
