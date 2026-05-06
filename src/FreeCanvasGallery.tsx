@@ -208,16 +208,14 @@ export default function FreeCanvasGallery({
     return freq;
   }, [items]);
 
-  // Get the top suggestion for a specific image (most used tag not already on this image and not dismissed)
+  // Get the top suggestion for a specific image (only if it has NO tags yet)
   const getAutoSuggestion = (itemId: string): string | null => {
     const img = items.find(i => i.id === itemId) as ImageItem | undefined;
-    if (!img || !img.tags !== undefined && img.tags && img.tags.length > 0) {
-      // If image already has tags, still suggest names it doesn't have
-    }
-    const currentTags = img?.tags || [];
+    if (!img) return null;
+    if (img.tags && img.tags.length > 0) return null; // already tagged, don't suggest
     const dismissed = dismissedSuggestions[itemId] || [];
     const candidates = Object.entries(tagFrequency)
-      .filter(([name]) => !currentTags.includes(name) && !dismissed.includes(name))
+      .filter(([name]) => !dismissed.includes(name))
       .sort((a, b) => b[1] - a[1]);
     return candidates.length > 0 ? candidates[0][0] : null;
   };
