@@ -115,8 +115,11 @@ export function useFaceDetection() {
           descriptor: det.descriptor,
         };
       });
-    } catch (err) {
-      console.error('Face detection failed:', err);
+    } catch (err: any) {
+      console.error('[FaceAPI] Detection failed:', err?.message || err);
+      if (err?.message?.includes('SecurityError') || err?.message?.includes('cross-origin')) {
+        console.warn('[FaceAPI] CORS issue: Image needs crossOrigin="anonymous" attribute');
+      }
       return [];
     } finally {
       setDetecting(false);

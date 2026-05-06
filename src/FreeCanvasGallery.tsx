@@ -323,6 +323,7 @@ export default function FreeCanvasGallery({
                       onError={e => { if (e.currentTarget.src !== item.originalUrl) e.currentTarget.src = item.originalUrl; }} />
                     {/* Main image */}
                     <img src={item.thumbnailUrl} alt={item.altText || ""} loading="eager" decoding="async"
+                      crossOrigin="anonymous"
                       ref={el => { if (el) imageRefs.current.set(item.id, el); }}
                       className="w-full h-auto object-cover relative z-10 opacity-0 transition-opacity duration-500"
                       onLoad={e => e.currentTarget.classList.remove('opacity-0')}
