@@ -35,6 +35,9 @@ export interface ImageItem extends BaseItem {
   // Aspect Ratio
   width: number;
   height: number;
+
+  // Merkelapper (tags)
+  tags?: string[];
 }
 
 export interface TextItem extends BaseItem {
@@ -61,6 +64,5 @@ export interface Album {
   location?: string;    // "Italia", "Hvaler", "Oslo"
   hidden?: boolean;     // hidden from guest view
   sortOrder?: number;
-  albumType?: 'album' | 'memory'; // 'memory' = iPhone-style minner
   items: GalleryItem[];
 }

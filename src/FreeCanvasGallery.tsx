@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, Download, GripHorizontal, Trash2, Maximize2, AlignLeft, AlignCenter, AlignRight, FolderPlus } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Download, GripHorizontal, Trash2, Maximize2, AlignLeft, AlignCenter, AlignRight, FolderPlus, Tag } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getTinyUrl } from './hooks/useGallerySync';
@@ -162,7 +162,8 @@ function Lightbox({ images, currentIndex, onClose, onNext, onPrev }: { images: I
 export default function FreeCanvasGallery({
   isAdmin, items, imageItems, onUpdateItem, onDeleteItem,
   lightboxIndex, setLightboxIndex, openLightbox,
-  albums, onAddToAlbum
+  albums, onAddToAlbum, imageIdsInMinner,
+  availableTags, onToggleTag
 }: {
   isAdmin: boolean;
   items: GalleryItem[];
@@ -174,11 +175,16 @@ export default function FreeCanvasGallery({
   openLightbox: (img: ImageItem) => void;
   albums?: Album[];
   onAddToAlbum?: (imageItem: ImageItem, albumId: string) => void;
+  imageIdsInMinner?: Set<string>;
+  availableTags?: string[];
+  onToggleTag?: (itemId: string, tag: string) => void;
 }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
-  const [albumDropdown, setAlbumDropdown] = useState<string | null>(null); // item id
+  const [albumDropdown, setAlbumDropdown] = useState<string | null>(null);
+  const [tagDropdown, setTagDropdown] = useState<string | null>(null);
+  const [newTag, setNewTag] = useState('');
 
   // Calculate canvas height from item positions
   const canvasHeight = useMemo(() => {
@@ -304,6 +310,20 @@ export default function FreeCanvasGallery({
                       onLoad={e => e.currentTarget.classList.remove('opacity-0')}
                       onError={e => { if (e.currentTarget.src !== item.originalUrl) { e.currentTarget.src = item.originalUrl; e.currentTarget.classList.remove('opacity-0'); } }} />
                     {!isAdmin && <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 z-20" />}
+                    {/* Minner badge */}
+                    {imageIdsInMinner?.has(item.originalUrl) && (
+                      <div className="absolute top-2 left-2 z-20 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5 shadow-sm border border-white/50 text-xs flex items-center gap-0.5" title="I et minne">
+                        <span className="text-[10px]">\u2728</span>
+                      </div>
+                    )}
+                    {/* Tags display */}
+                    {item.type === 'image' && (item as ImageItem).tags && (item as ImageItem).tags!.length > 0 && (
+                      <div className="absolute bottom-2 left-2 z-20 flex flex-wrap gap-1">
+                        {(item as ImageItem).tags!.map(tag => (
+                          <span key={tag} className="bg-white/85 backdrop-blur-sm text-[9px] font-semibold text-gray-600 px-1.5 py-0.5 rounded-full shadow-sm">{tag}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   {/* Caption area */}
                   {(item.title || item.caption || isAdmin) && (
@@ -318,23 +338,56 @@ export default function FreeCanvasGallery({
                       <div className="flex items-center gap-1 bg-white/95 backdrop-blur-sm shadow-lg rounded-lg p-1 border border-gray-200/80">
                         <SizeControl label="T" current={item.titleSize || 'lg'} onChange={s => onUpdateItem(item.id, { titleSize: s })} />
                         <div className="w-px h-4 bg-gray-200" />
-                        {/* Add to album */}
+                        {/* Add to minne */}
                         {albums && albums.length > 0 && onAddToAlbum && (
                           <div className="relative">
-                            <button onClick={() => setAlbumDropdown(albumDropdown === item.id ? null : item.id)}
-                              className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded" title="Legg i samling">
+                            <button onClick={() => { setAlbumDropdown(albumDropdown === item.id ? null : item.id); setTagDropdown(null); }}
+                              className={cn("p-1 rounded", imageIdsInMinner?.has(item.originalUrl) ? "text-amber-500 hover:text-amber-600 hover:bg-amber-50" : "text-gray-400 hover:text-blue-600 hover:bg-blue-50")} title="Legg i minne">
                               <FolderPlus size={12} />
                             </button>
                             {albumDropdown === item.id && (
                               <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-50 min-w-[180px]">
-                                <div className="px-3 py-2 text-[10px] uppercase font-bold text-gray-400 tracking-wider border-b border-gray-100">Legg i samling</div>
+                                <div className="px-3 py-2 text-[10px] uppercase font-bold text-gray-400 tracking-wider border-b border-gray-100">\u2728 Legg i minne</div>
                                 {albums.map(a => (
                                   <button key={a.id} onClick={() => { onAddToAlbum(item as ImageItem, a.id); setAlbumDropdown(null); }}
                                     className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 transition-colors">
-                                    <span>{a.emoji || '📁'}</span>
+                                    <span>{a.emoji || '\u2728'}</span>
                                     <span className="truncate">{a.title}</span>
                                   </button>
                                 ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {/* Merkelapper (tags) */}
+                        {onToggleTag && (
+                          <div className="relative">
+                            <button onClick={() => { setTagDropdown(tagDropdown === item.id ? null : item.id); setAlbumDropdown(null); }}
+                              className={cn("p-1 rounded", (item as ImageItem).tags?.length ? "text-violet-500 hover:text-violet-600 hover:bg-violet-50" : "text-gray-400 hover:text-violet-600 hover:bg-violet-50")} title="Merkelapper">
+                              <Tag size={12} />
+                            </button>
+                            {tagDropdown === item.id && (
+                              <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-50 min-w-[180px]">
+                                <div className="px-3 py-2 text-[10px] uppercase font-bold text-gray-400 tracking-wider border-b border-gray-100">🏷️ Merkelapper</div>
+                                {(availableTags || []).map(tag => {
+                                  const hasTag = (item as ImageItem).tags?.includes(tag);
+                                  return (
+                                    <button key={tag} onClick={() => onToggleTag(item.id, tag)}
+                                      className={cn("w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 transition-colors", hasTag ? "bg-violet-50 text-violet-700" : "hover:bg-gray-50 text-gray-700")}>
+                                      <span className={cn("w-3.5 h-3.5 rounded border flex items-center justify-center text-[10px]", hasTag ? "bg-violet-500 border-violet-500 text-white" : "border-gray-300")}>
+                                        {hasTag ? '\u2713' : ''}
+                                      </span>
+                                      {tag}
+                                    </button>
+                                  );
+                                })}
+                                <div className="border-t border-gray-100 px-2 py-1.5 flex gap-1">
+                                  <input value={newTag} onChange={e => setNewTag(e.target.value)} placeholder="Ny merkelapp..."
+                                    className="flex-1 text-xs px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-violet-200"
+                                    onKeyDown={e => { if (e.key === 'Enter' && newTag.trim()) { onToggleTag(item.id, newTag.trim()); setNewTag(''); } }} />
+                                  <button onClick={() => { if (newTag.trim()) { onToggleTag(item.id, newTag.trim()); setNewTag(''); } }}
+                                    className="text-xs px-2 py-1 bg-violet-100 text-violet-700 rounded-lg hover:bg-violet-200 font-medium">+</button>
+                                </div>
                               </div>
                             )}
                           </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Lock, Plus, Trash2, Save, Image as ImageIcon, Type, LogOut, FilePlus, ArrowLeft, ArrowRight, Settings, Eye, EyeOff, Home, PanelLeft } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -718,7 +718,7 @@ function GalleryView({
   onAddPage: () => void;
   onDeletePage: () => void;
   onOpenSettings: () => void;
-  onCreateAlbum: (data: { title: string; emoji: string; description: string; date: string; location?: string; albumType?: 'album' | 'memory' }) => void;
+  onCreateAlbum: (data: { title: string; emoji: string; description: string; date: string; location?: string }) => void;
   onUpdateAlbum: (id: string, updates: Partial<Album>) => void;
   onDeleteAlbum: (id: string) => void;
   onUpdateAlbumItem: (albumId: string, itemId: string, updates: Partial<GalleryItem>) => void;
@@ -758,6 +758,30 @@ function GalleryView({
   };
 
   const visibleAlbums = isAdmin ? albums : albums.filter(a => !a.hidden);
+
+  // Compute set of image originalUrls that exist in any minne
+  const imageIdsInMinner = useMemo(() => {
+    const s = new Set<string>();
+    albums.forEach(a => a.items.forEach(i => { if (i.type === 'image') s.add((i as ImageItem).originalUrl); }));
+    return s;
+  }, [albums]);
+
+  // Collect all unique tags across all pages
+  const availableTags = useMemo(() => {
+    const tags = new Set<string>();
+    pages.forEach(p => p.items.forEach(i => { if (i.type === 'image' && (i as ImageItem).tags) (i as ImageItem).tags!.forEach(t => tags.add(t)); }));
+    return Array.from(tags).sort();
+  }, [pages]);
+
+  // Toggle tag on/off for an image
+  const handleToggleTag = (itemId: string, tag: string) => {
+    const item = items.find(i => i.id === itemId);
+    if (!item || item.type !== 'image') return;
+    const img = item as ImageItem;
+    const current = img.tags || [];
+    const newTags = current.includes(tag) ? current.filter(t => t !== tag) : [...current, tag];
+    onUpdateItem(itemId, { tags: newTags } as Partial<GalleryItem>);
+  };
 
   // Guard clause moved AFTER hooks to satisfy Rules of Hooks
   if (!currentPage) {
@@ -874,14 +898,15 @@ function GalleryView({
               {showIntros && (
                 <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0, marginBottom: 0 }} className="mb-8 flex items-start justify-between bg-white/50 p-4 rounded-lg border border-gray-100">
                   <div className="text-sm text-gray-600 max-w-prose">
-                    {effectiveAdmin ? "Forside: Plasser bilder fritt. Åpne 📁 for samlinger." : "Velkommen til bildegalleriet!"}
+                    {effectiveAdmin ? "Forside: Plasser bilder fritt. Åpne menyen for minner." : "Velkommen til bildegalleriet!"}
                   </div>
                   <button onClick={() => setShowIntros(false)} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
                 </motion.div>
               )}
             </AnimatePresence>
             <FreeCanvasGallery isAdmin={effectiveAdmin} items={items} imageItems={imageItems} onUpdateItem={onUpdateItem} onDeleteItem={onDeleteItem} lightboxIndex={lightboxIndex} setLightboxIndex={setLightboxIndex} openLightbox={openLightbox}
-              albums={albums} onAddToAlbum={(img, albumId) => onAddImageToAlbum(img, albumId)} />
+              albums={albums} onAddToAlbum={(img, albumId) => onAddImageToAlbum(img, albumId)}
+              imageIdsInMinner={imageIdsInMinner} availableTags={availableTags} onToggleTag={handleToggleTag} />
             <PaginationFooter currentPageIndex={currentPageIndex} totalPages={pages.length} onNext={() => onChangePage(currentPageIndex + 1)} onPrev={() => onChangePage(currentPageIndex - 1)} isAdmin={effectiveAdmin} onAddPage={onAddPage} onDeletePage={() => setPageToDelete(true)} />
           </>
         )}
@@ -1274,7 +1299,7 @@ export default function App() {
   };
 
   // --- Album CRUD ---
-  const handleCreateAlbum = (data: { title: string; emoji: string; description: string; date: string; location?: string; albumType?: 'album' | 'memory' }) => {
+  const handleCreateAlbum = (data: { title: string; emoji: string; description: string; date: string; location?: string }) => {
     const newAlbum: Album = {
       id: `album-${Date.now()}`,
       title: data.title,
@@ -1282,7 +1307,6 @@ export default function App() {
       description: data.description || undefined,
       date: data.date || undefined,
       location: data.location || undefined,
-      albumType: data.albumType || 'album',
       sortOrder: albums.length,
       items: [],
     };
