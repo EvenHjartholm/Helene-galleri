@@ -1232,9 +1232,12 @@ export default function App() {
        const newItem: TextItem = {
          id: `txt-${Date.now()}`,
          type: 'text',
-         content: "Ny tekst... klikk for å redigere.",
+         content: "Ny tekst... klikk for \u00e5 redigere.",
          align: 'center',
-         size: 'md'
+         size: 'md',
+         x: 5,
+         y: 20,
+         w: 90
        };
        updateCurrentPageItems(prev => [newItem, ...prev]);
     } else if (type === 'image' && payload) {
