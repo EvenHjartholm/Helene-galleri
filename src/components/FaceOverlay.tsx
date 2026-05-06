@@ -96,14 +96,17 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
             style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.25)' }} />
 
           {/* Label or input */}
-          {activeObj === obj.id ? (
-            // Name input mode
+          {activeObj === obj.id || obj.label === 'person' ? (
+            // Name input mode (auto-open for persons)
             <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50 min-w-[160px]"
               onClick={e => e.stopPropagation()}>
               <div className="relative">
-                <input ref={inputRef} value={nameInput} onChange={e => setNameInput(e.target.value)}
-                  placeholder={obj.label === 'person' ? 'Hvem er dette?' : `${obj.labelNo}...`}
-                  autoFocus
+                <input ref={obj.label === 'person' && activeObj !== obj.id ? undefined : inputRef}
+                  value={activeObj === obj.id ? nameInput : ''}
+                  onChange={e => { setActiveObj(obj.id); setNameInput(e.target.value); }}
+                  onFocus={() => setActiveObj(obj.id)}
+                  placeholder={obj.label === 'person' ? '👤 Hvem er dette?' : `${obj.labelNo}...`}
+                  autoFocus={activeObj === obj.id}
                   className="w-full text-[11px] px-2.5 py-1.5 bg-black/85 backdrop-blur-sm text-white placeholder-white/50 border border-white/20 rounded-lg focus:outline-none focus:ring-1 focus:ring-white/40 text-center"
                   onKeyDown={e => {
                     if (e.key === 'Enter' && nameInput.trim()) {
@@ -112,7 +115,7 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
                       setActiveObj(null); setNameInput('');
                     }
                   }} />
-                {suggestions.length > 0 && (
+                {activeObj === obj.id && suggestions.length > 0 && (
                   <div className="absolute bottom-full left-0 right-0 mb-1 bg-white/95 backdrop-blur-md rounded-lg shadow-xl border border-gray-200 overflow-hidden">
                     {suggestions.map(s => (
                       <button key={s} onClick={() => handleTag(s, obj.id)}
@@ -125,12 +128,12 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
               </div>
             </div>
           ) : (
-            // Auto-detected label with confirm
+            // Non-person: Auto-detected label with confirm (Fugl?, Ku?)
             <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50"
               onClick={e => e.stopPropagation()}>
               <div className="bg-black/80 backdrop-blur-sm rounded-lg px-2.5 py-1.5 flex items-center gap-1.5 whitespace-nowrap shadow-xl border border-white/10">
                 <span className="text-[10px] text-white/90 font-medium">
-                  {obj.label === 'person' ? '👤' : '🏷️'} {obj.labelNo}?
+                  {'🏷️'} {obj.labelNo}?
                 </span>
                 <button onClick={() => handleTag(obj.labelNo, obj.id)}
                   className="text-[9px] font-bold bg-green-500/80 hover:bg-green-500 text-white px-2 py-0.5 rounded-full transition-colors">Ja</button>
