@@ -834,6 +834,16 @@ function GalleryView({
         </div>
       </aside>
 
+      {/* ===== SIDEBAR TOGGLE (fixed, transitions between inside/outside) ===== */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="fixed z-[51] top-[18px] transition-all duration-300 ease-out p-2 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-100"
+        style={{ left: sidebarOpen ? 236 : 12 }}
+        title={sidebarOpen ? 'Lukk meny' : 'Åpne samlinger'}
+      >
+        <PanelLeft size={20} className={cn("transition-transform duration-300", sidebarOpen && "rotate-180")} />
+      </button>
+
       {/* ===== CONTENT WRAPPER (shifts right when sidebar open) ===== */}
       <div className={cn("transition-all duration-300 ease-out pb-24", sidebarOpen ? "ml-[280px]" : "ml-0")}>
 
@@ -841,10 +851,8 @@ function GalleryView({
       <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100/50">
         <div className="max-w-[1600px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 -ml-1 text-gray-400 hover:text-gray-900 rounded-lg transition-all" title={sidebarOpen ? 'Lukk meny' : 'Åpne samlinger'}>
-               <PanelLeft size={20} />
-             </button>
-             <div className="w-px h-6 bg-gray-200" />
+             {/* Space for toggle button when sidebar is closed */}
+             <div className={cn("transition-all duration-300", sidebarOpen ? "w-0" : "w-8")} />
              <h1 className="font-serif text-xl text-gray-900 tracking-tight font-medium">
                {selectedAlbum ? (
                  <span className="flex items-center gap-2">{selectedAlbum.emoji && <span>{selectedAlbum.emoji}</span>}{selectedAlbum.title}</span>
