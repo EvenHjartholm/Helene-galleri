@@ -1229,6 +1229,11 @@ export default function App() {
 
   const handleAddItem = (type: 'image' | 'text', payload?: any) => {
     if (type === 'text') {
+       // Place below all existing items so it's visible
+       const currentItems = pages[currentPageIndex]?.items || [];
+       const lowestY = currentItems.length > 0
+         ? Math.max(...currentItems.map(i => (i.y ?? 0) + (i.type === 'text' ? 80 : 300)))
+         : 0;
        const newItem: TextItem = {
          id: `txt-${Date.now()}`,
          type: 'text',
@@ -1236,10 +1241,10 @@ export default function App() {
          align: 'center',
          size: 'md',
          x: 5,
-         y: 20,
+         y: lowestY + 30,
          w: 90
        };
-       updateCurrentPageItems(prev => [newItem, ...prev]);
+       updateCurrentPageItems(prev => [...prev, newItem]);
     } else if (type === 'image' && payload) {
       // Payload is now string[] or string
       // Payload is now string[] or string or File[]
