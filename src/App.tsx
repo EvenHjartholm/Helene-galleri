@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Lock, Plus, Trash2, Save, Image as ImageIcon, Type, LogOut, FilePlus, ArrowLeft, ArrowRight, Settings, Eye, EyeOff, Home, PanelLeft } from 'lucide-react';
+import { X, Lock, Plus, Trash2, Save, Image as ImageIcon, Type, LogOut, FilePlus, ArrowLeft, ArrowRight, Settings, Eye, EyeOff, Home, PanelLeft, Tag } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { supabase } from './lib/supabase';
@@ -773,13 +773,24 @@ function GalleryView({
     return Array.from(tags).sort();
   }, [pages]);
 
-  // Toggle tag on/off for an image
+  // Add or remove tag for an image
   const handleToggleTag = (itemId: string, tag: string) => {
     const item = items.find(i => i.id === itemId);
     if (!item || item.type !== 'image') return;
     const img = item as ImageItem;
     const current = img.tags || [];
-    const newTags = current.includes(tag) ? current.filter(t => t !== tag) : [...current, tag];
+    // Always ADD the tag (don't toggle) — removal is handled via X button in sidebar/tag display
+    if (current.includes(tag)) return; // already tagged, skip
+    const newTags = [...current, tag];
+    onUpdateItem(itemId, { tags: newTags } as Partial<GalleryItem>);
+  };
+
+  // Remove a specific tag from an image
+  const handleRemoveTag = (itemId: string, tag: string) => {
+    const item = items.find(i => i.id === itemId);
+    if (!item || item.type !== 'image') return;
+    const img = item as ImageItem;
+    const newTags = (img.tags || []).filter(t => t !== tag);
     onUpdateItem(itemId, { tags: newTags } as Partial<GalleryItem>);
   };
 
@@ -834,6 +845,39 @@ function GalleryView({
               className="mx-5 mt-1 mb-3 flex items-center gap-2 py-1.5 px-3 text-xs font-medium text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-all w-fit">
               <Plus size={12} /> Nytt minne
             </button>
+          )}
+
+          {/* --- TAGGER section (admin only) --- */}
+          {effectiveAdmin && availableTags.length > 0 && (
+            <>
+              <div className="px-5 pt-4 pb-2 flex items-center gap-2 border-t border-gray-100 mt-2">
+                <Tag size={14} className="text-gray-400" />
+                <span className="text-[11px] uppercase font-bold text-gray-400 tracking-wider">Tagger</span>
+                <span className="ml-auto text-[10px] text-gray-300">{availableTags.length}</span>
+              </div>
+              <div className="px-3 pb-4 flex flex-wrap gap-1.5">
+                {availableTags.map(tag => {
+                  const count = items.filter(i => i.type === 'image' && (i as ImageItem).tags?.includes(tag)).length;
+                  return (
+                    <span key={tag} className="group bg-gray-50 hover:bg-gray-100 text-[10px] font-medium text-gray-600 px-2 py-1 rounded-full flex items-center gap-1 border border-gray-200/60 transition-colors">
+                      {tag}
+                      <span className="text-[9px] text-gray-400">({count})</span>
+                      <button onClick={() => {
+                        if (confirm(`Fjern taggen "${tag}" fra alle bilder?`)) {
+                          items.forEach(i => {
+                            if (i.type === 'image' && (i as ImageItem).tags?.includes(tag)) {
+                              handleRemoveTag(i.id, tag);
+                            }
+                          });
+                        }
+                      }} className="text-gray-300 hover:text-red-500 ml-0.5 opacity-0 group-hover:opacity-100 transition-all" title="Fjern tagg">
+                        &times;
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       </aside>
