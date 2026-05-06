@@ -189,7 +189,6 @@ export default function FreeCanvasGallery({
   const [personTagInput, setPersonTagInput] = useState<string | null>(null);
   const [personTagValue, setPersonTagValue] = useState('');
   const personInputRef = useRef<HTMLInputElement>(null);
-  const [dismissedSuggestions, setDismissedSuggestions] = useState<Record<string, string[]>>({});
   const [hoveredImageId, setHoveredImageId] = useState<string | null>(null);
   const imageRefs = useRef<Map<string, HTMLImageElement>>(new Map());
 
@@ -200,28 +199,7 @@ export default function FreeCanvasGallery({
     return availableTags.filter(t => t.toLowerCase().includes(q) && !(items.find(i => i.id === personTagInput) as ImageItem)?.tags?.includes(t));
   }, [personTagValue, availableTags, items, personTagInput]);
 
-  // Rank tags by frequency for auto-suggestions
-  const tagFrequency = useMemo(() => {
-    const freq: Record<string, number> = {};
-    items.forEach(i => {
-      if (i.type === 'image' && (i as ImageItem).tags) {
-        (i as ImageItem).tags!.forEach(t => { freq[t] = (freq[t] || 0) + 1; });
-      }
-    });
-    return freq;
-  }, [items]);
 
-  // Get the top suggestion for a specific image (only if it has NO tags yet)
-  const getAutoSuggestion = (itemId: string): string | null => {
-    const img = items.find(i => i.id === itemId) as ImageItem | undefined;
-    if (!img) return null;
-    if (img.tags && img.tags.length > 0) return null; // already tagged, don't suggest
-    const dismissed = dismissedSuggestions[itemId] || [];
-    const candidates = Object.entries(tagFrequency)
-      .filter(([name]) => !dismissed.includes(name))
-      .sort((a, b) => b[1] - a[1]);
-    return candidates.length > 0 ? candidates[0][0] : null;
-  };
 
   // Calculate canvas height from item positions
   const canvasHeight = useMemo(() => {
@@ -411,32 +389,7 @@ export default function FreeCanvasGallery({
                           </div>
                         </div>
                       )}
-                      {/* Auto-suggestion / manual tagging (admin, when not typing) */}
-                      {isAdmin && onToggleTag && personTagInput !== item.id && (() => {
-                        const suggestion = getAutoSuggestion(item.id);
-                        return suggestion ? (
-                          <div className="px-2 pb-2 pt-0.5" onClick={e => e.stopPropagation()}>
-                            <div className="bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 flex items-center justify-between gap-2">
-                              <span className="text-[11px] text-white/90 font-medium">
-                                {'👤'} Er dette <strong>{suggestion}</strong>?
-                              </span>
-                              <div className="flex gap-1.5 flex-shrink-0">
-                                <button onClick={() => { onToggleTag(item.id, suggestion); }}
-                                  className="text-[10px] font-bold bg-green-500/80 hover:bg-green-500 text-white px-2.5 py-0.5 rounded-full transition-colors">Ja</button>
-                                <button onClick={() => { setDismissedSuggestions(prev => ({ ...prev, [item.id]: [...(prev[item.id] || []), suggestion] })); }}
-                                  className="text-[10px] font-bold bg-white/20 hover:bg-white/30 text-white px-2.5 py-0.5 rounded-full transition-colors">Nei</button>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="px-2 pb-1.5">
-                            <button onClick={(e) => { e.stopPropagation(); setPersonTagInput(item.id); setPersonTagValue(''); setTimeout(() => personInputRef.current?.focus(), 50); }}
-                              className="text-[10px] font-medium text-white/80 hover:text-white bg-black/40 hover:bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full transition-colors flex items-center gap-1">
-                              {'👤'} Hvem er dette?
-                            </button>
-                          </div>
-                        );
-                      })()}
+
                     </div>
                   </div>
                   {/* Caption area */}
