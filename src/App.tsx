@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Lock, Plus, Trash2, Save, Image as ImageIcon, Type, LogOut, FilePlus, ArrowLeft, ArrowRight, Settings, Eye, EyeOff, Home, FolderOpen, PanelLeft } from 'lucide-react';
+import { X, Lock, Plus, Trash2, Save, Image as ImageIcon, Type, LogOut, FilePlus, ArrowLeft, ArrowRight, Settings, Eye, EyeOff, Home, PanelLeft } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { supabase } from './lib/supabase';
@@ -734,7 +734,6 @@ function GalleryView({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
   const [showCreateAlbum, setShowCreateAlbum] = useState(false);
-  const [createAlbumType, setCreateAlbumType] = useState<'album' | 'memory'>('album');
 
   // Album lightbox state
   const [albumLightboxIndex, setAlbumLightboxIndex] = useState<number | null>(null);
@@ -759,8 +758,6 @@ function GalleryView({
   };
 
   const visibleAlbums = isAdmin ? albums : albums.filter(a => !a.hidden);
-  const regularAlbums = visibleAlbums.filter(a => a.albumType !== 'memory');
-  const memoryAlbums = visibleAlbums.filter(a => a.albumType === 'memory');
 
   // Guard clause moved AFTER hooks to satisfy Rules of Hooks
   if (!currentPage) {
@@ -794,39 +791,22 @@ function GalleryView({
           {!selectedAlbumId && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500" />}
         </button>
         <div className="flex-1 overflow-y-auto">
-          {/* --- SAMLINGER section --- */}
-          <div className="px-5 pt-4 pb-2 flex items-center gap-2">
-            <FolderOpen size={14} className="text-gray-400" />
-            <span className="text-[11px] uppercase font-bold text-gray-400 tracking-wider">Samlinger</span>
-          </div>
-          {regularAlbums.length === 0 && (
-            <div className="px-5 py-3 text-center text-gray-300 text-xs">Ingen samlinger ennå</div>
-          )}
-          {regularAlbums.map(album => <SidebarAlbumRow key={album.id} album={album} isActive={selectedAlbumId === album.id}
-            effectiveAdmin={effectiveAdmin} onSelect={() => { setSelectedAlbumId(album.id); setSidebarOpen(false); }}
-            onToggleHide={() => onUpdateAlbum(album.id, { hidden: !album.hidden })} onDelete={() => { if (confirm(`Slett "${album.title}"?`)) onDeleteAlbum(album.id); }} />
-          )}
-          {effectiveAdmin && (
-            <button onClick={() => { setShowCreateAlbum(true); setCreateAlbumType('album'); setSidebarOpen(false); }}
-              className="mx-5 mt-1 mb-3 flex items-center gap-2 py-1.5 px-3 text-xs font-medium text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-all w-fit">
-              <Plus size={12} /> Ny samling
-            </button>
-          )}
-
           {/* --- MINNER section --- */}
-          <div className="px-5 pt-3 pb-2 flex items-center gap-2 border-t border-gray-100">
-            <span className="text-base">✨</span>
+          <div className="px-5 pt-4 pb-2 flex items-center gap-2">
+            <span className="text-sm">✨</span>
             <span className="text-[11px] uppercase font-bold text-gray-400 tracking-wider">Minner</span>
           </div>
-          {memoryAlbums.length === 0 && (
-            <div className="px-5 py-3 text-center text-gray-300 text-xs">Ingen minner ennå</div>
+          {visibleAlbums.length === 0 && (
+            <div className="px-5 py-6 text-center text-gray-300 text-xs">
+              <span className="text-2xl block mb-1">✨</span>Ingen minner ennå
+            </div>
           )}
-          {memoryAlbums.map(album => <SidebarAlbumRow key={album.id} album={album} isActive={selectedAlbumId === album.id}
+          {visibleAlbums.map(album => <SidebarAlbumRow key={album.id} album={album} isActive={selectedAlbumId === album.id}
             effectiveAdmin={effectiveAdmin} isMemory onSelect={() => { setSelectedAlbumId(album.id); setSidebarOpen(false); }}
             onToggleHide={() => onUpdateAlbum(album.id, { hidden: !album.hidden })} onDelete={() => { if (confirm(`Slett "${album.title}"?`)) onDeleteAlbum(album.id); }} />
           )}
           {effectiveAdmin && (
-            <button onClick={() => { setShowCreateAlbum(true); setCreateAlbumType('memory'); setSidebarOpen(false); }}
+            <button onClick={() => { setShowCreateAlbum(true); setSidebarOpen(false); }}
               className="mx-5 mt-1 mb-3 flex items-center gap-2 py-1.5 px-3 text-xs font-medium text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-all w-fit">
               <Plus size={12} /> Nytt minne
             </button>
@@ -949,7 +929,7 @@ function GalleryView({
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-              <CreateAlbumForm albumType={createAlbumType} onSave={(data) => { onCreateAlbum(data); setShowCreateAlbum(false); }} onCancel={() => setShowCreateAlbum(false)} />
+              <CreateAlbumForm onSave={(data) => { onCreateAlbum(data); setShowCreateAlbum(false); }} onCancel={() => setShowCreateAlbum(false)} />
             </motion.div>
           </div>
         )}
@@ -1006,24 +986,20 @@ function SidebarAlbumRow({ album, isActive, effectiveAdmin, isMemory, onSelect, 
   );
 }
 
-// Create album / memory form
-function CreateAlbumForm({ onSave, onCancel, albumType }: {
-  onSave: (data: { title: string; emoji: string; description: string; date: string; location?: string; albumType: 'album' | 'memory' }) => void;
+// Create memory form
+function CreateAlbumForm({ onSave, onCancel }: {
+  onSave: (data: { title: string; emoji: string; description: string; date: string; location?: string }) => void;
   onCancel: () => void;
-  albumType: 'album' | 'memory';
 }) {
   const [title, setTitle] = useState('');
-  const [emoji, setEmoji] = useState(albumType === 'memory' ? '✨' : '📸');
+  const [emoji, setEmoji] = useState('\u2728');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
-  const isMemory = albumType === 'memory';
-  const emojis = isMemory
-    ? ['✨', '🌅', '🏖️', '🏔️', '🌊', '🏠', '❤️', '🎄', '☀️', '🌸', '⭐', '🌙']
-    : ['📸', '🏔️', '🎂', '🌊', '🎄', '🌸', '🎉', '✈️', '🦉', '🏠', '❤️', '🎓', '⚽', '🎵', '🍕', '🐶'];
+  const emojis = ['\u2728', '\ud83c\udf05', '\ud83c\udfd6\ufe0f', '\ud83c\udfd4\ufe0f', '\ud83c\udf0a', '\ud83c\udfe0', '\u2764\ufe0f', '\ud83c\udf84', '\u2600\ufe0f', '\ud83c\udf38', '\ud83c\udf89', '\u2708\ufe0f', '\ud83e\udd89', '\ud83d\udcf8', '\ud83c\udf42', '\ud83d\udc36'];
   return (
     <>
-      <h3 className="text-xl font-serif mb-5">{isMemory ? 'Nytt minne' : 'Ny samling'}</h3>
+      <h3 className="text-xl font-serif mb-5">Nytt minne</h3>
       <div className="mb-4">
         <label className="text-xs uppercase tracking-wider font-semibold text-gray-400 mb-2 block">Ikon</label>
         <div className="flex flex-wrap gap-1.5">
@@ -1037,31 +1013,27 @@ function CreateAlbumForm({ onSave, onCancel, albumType }: {
       </div>
       <div className="mb-4">
         <label className="text-xs uppercase tracking-wider font-semibold text-gray-400 mb-1.5 block">Tittel</label>
-        <input autoFocus value={title} onChange={e => setTitle(e.target.value)} placeholder={isMemory ? "F.eks. Sommer i Italia" : "F.eks. Italia 2024"}
+        <input autoFocus value={title} onChange={e => setTitle(e.target.value)} placeholder="F.eks. Sommer i Italia"
           className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-900" />
       </div>
-      {isMemory && (
-        <div className="mb-4">
-          <label className="text-xs uppercase tracking-wider font-semibold text-gray-400 mb-1.5 block">📍 Sted</label>
-          <input value={location} onChange={e => setLocation(e.target.value)} placeholder="F.eks. Hvaler, Italia, Oslo"
-            className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-900" />
-        </div>
-      )}
       <div className="mb-4">
-        <label className="text-xs uppercase tracking-wider font-semibold text-gray-400 mb-1.5 block">{isMemory ? 'Når' : 'Dato (valgfri)'}</label>
+        <label className="text-xs uppercase tracking-wider font-semibold text-gray-400 mb-1.5 block">📍 Sted (valgfri)</label>
+        <input value={location} onChange={e => setLocation(e.target.value)} placeholder="F.eks. Hvaler, Italia, Oslo"
+          className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-900" />
+      </div>
+      <div className="mb-4">
+        <label className="text-xs uppercase tracking-wider font-semibold text-gray-400 mb-1.5 block">Når (valgfri)</label>
         <input type="month" value={date} onChange={e => setDate(e.target.value)}
           className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-900" />
       </div>
-      {!isMemory && (
-        <div className="mb-4">
-          <label className="text-xs uppercase tracking-wider font-semibold text-gray-400 mb-1.5 block">Beskrivelse (valgfri)</label>
-          <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Noen ord..." rows={2}
-            className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-900 resize-none" />
-        </div>
-      )}
+      <div className="mb-4">
+        <label className="text-xs uppercase tracking-wider font-semibold text-gray-400 mb-1.5 block">Beskrivelse (valgfri)</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Noen ord om dette minnet..." rows={2}
+          className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-900 resize-none" />
+      </div>
       <div className="flex gap-2 justify-end mt-6">
         <button onClick={onCancel} className="px-4 py-2.5 text-sm text-gray-500 rounded-xl hover:bg-gray-100">Avbryt</button>
-        <button onClick={() => title.trim() && onSave({ title: title.trim(), emoji, description, date, location: location.trim() || undefined, albumType })} disabled={!title.trim()}
+        <button onClick={() => title.trim() && onSave({ title: title.trim(), emoji, description, date, location: location.trim() || undefined })} disabled={!title.trim()}
           className="px-5 py-2.5 text-sm bg-gray-900 text-white rounded-xl hover:bg-gray-800 disabled:opacity-30 font-medium">Opprett</button>
       </div>
     </>
