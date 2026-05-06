@@ -1,5 +1,3 @@
-import * as tf from '@tensorflow/tfjs';
-import * as cocoSsd from '@tensorflow-models/coco-ssd';
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 // Norwegian translations for COCO-SSD labels
@@ -22,13 +20,14 @@ const LABEL_NO: Record<string, string> = {
 
 export interface DetectedObject {
   id: string;
-  label: string;       // English COCO label
-  labelNo: string;     // Norwegian label
-  score: number;       // confidence 0-1
-  box: { x: number; y: number; width: number; height: number }; // relative 0-1
+  label: string;
+  labelNo: string;
+  score: number;
+  box: { x: number; y: number; width: number; height: number };
 }
 
-let model: cocoSsd.ObjectDetection | null = null;
+// Lazy-loaded model reference
+let model: any = null;
 let modelPromise: Promise<void> | null = null;
 
 async function loadModel() {
@@ -37,13 +36,17 @@ async function loadModel() {
 
   modelPromise = (async () => {
     try {
-      console.log('[ObjectDetection] Loading COCO-SSD model...');
+      console.log('[AI] Loading TensorFlow + COCO-SSD...');
+      // Dynamic import to avoid crashing the app on load
+      const tf = await import('@tensorflow/tfjs');
       await tf.ready();
+      console.log('[AI] TensorFlow ready, loading COCO-SSD model...');
+      const cocoSsd = await import('@tensorflow-models/coco-ssd');
       model = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
-      console.log('[ObjectDetection] Model ready!');
+      console.log('[AI] COCO-SSD model ready!');
     } catch (err) {
-      console.error('[ObjectDetection] Failed to load model:', err);
-      modelPromise = null;
+      console.error('[AI] Failed to load model:', err);
+      modelPromise = null; // allow retry
     }
   })();
   return modelPromise;
@@ -53,6 +56,7 @@ export function useObjectDetection() {
   const [detecting, setDetecting] = useState(false);
   const abortRef = useRef(false);
 
+  // Start loading model on mount (non-blocking)
   useEffect(() => { loadModel(); }, []);
 
   const detect = useCallback(async (imgElement: HTMLImageElement): Promise<DetectedObject[]> => {
@@ -69,7 +73,7 @@ export function useObjectDetection() {
       const imgW = imgElement.naturalWidth || imgElement.width;
       const imgH = imgElement.naturalHeight || imgElement.height;
 
-      return predictions.map((pred, i) => ({
+      return predictions.map((pred: any, i: number) => ({
         id: `obj-${i}-${Date.now()}`,
         label: pred.class,
         labelNo: LABEL_NO[pred.class] || pred.class,
@@ -82,7 +86,7 @@ export function useObjectDetection() {
         },
       }));
     } catch (err: any) {
-      console.error('[ObjectDetection] Detection failed:', err?.message || err);
+      console.error('[AI] Detection failed:', err?.message || err);
       return [];
     } finally {
       setDetecting(false);
