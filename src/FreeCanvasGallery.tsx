@@ -6,6 +6,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getTinyUrl } from './hooks/useGallerySync';
 import type { GalleryItem, ImageItem, TextSize, Album } from './types';
+import FaceOverlay from './components/FaceOverlay';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -188,7 +189,9 @@ export default function FreeCanvasGallery({
   const [personTagInput, setPersonTagInput] = useState<string | null>(null);
   const [personTagValue, setPersonTagValue] = useState('');
   const personInputRef = useRef<HTMLInputElement>(null);
-  const [dismissedSuggestions, setDismissedSuggestions] = useState<Record<string, string[]>>({}); // itemId -> dismissed names
+  const [dismissedSuggestions, setDismissedSuggestions] = useState<Record<string, string[]>>({});
+  const [hoveredImageId, setHoveredImageId] = useState<string | null>(null);
+  const imageRefs = useRef<Map<string, HTMLImageElement>>(new Map());
 
   // Filter suggestions based on typed value
   const tagSuggestions = useMemo(() => {
@@ -332,7 +335,9 @@ export default function FreeCanvasGallery({
                   )}
                 </div>
               ) : (
-                <div className="relative" onClick={() => !isAdmin && openLightbox(item as ImageItem)}>
+                <div className="relative" onClick={() => !isAdmin && openLightbox(item as ImageItem)}
+                  onMouseEnter={() => isAdmin && setHoveredImageId(item.id)}
+                  onMouseLeave={() => { if (hoveredImageId === item.id) setHoveredImageId(null); }}>
                   <div className={cn("relative overflow-hidden bg-gray-100 shadow-md transition-all duration-300 rounded-xl", !isAdmin && "hover:shadow-2xl cursor-zoom-in")}>
                     {/* Blur placeholder */}
                     <img src={getTinyUrl(item.originalUrl)} alt="" fetchPriority="high" decoding="async"
@@ -340,6 +345,7 @@ export default function FreeCanvasGallery({
                       onError={e => { if (e.currentTarget.src !== item.originalUrl) e.currentTarget.src = item.originalUrl; }} />
                     {/* Main image */}
                     <img src={item.thumbnailUrl} alt={item.altText || ""} loading="eager" decoding="async"
+                      ref={el => { if (el) imageRefs.current.set(item.id, el); }}
                       className="w-full h-auto object-cover relative z-10 opacity-0 transition-opacity duration-500"
                       onLoad={e => e.currentTarget.classList.remove('opacity-0')}
                       onError={e => { if (e.currentTarget.src !== item.originalUrl) { e.currentTarget.src = item.originalUrl; e.currentTarget.classList.remove('opacity-0'); } }} />
@@ -349,6 +355,15 @@ export default function FreeCanvasGallery({
                       <div className="absolute top-2 left-2 z-30 bg-amber-50/95 backdrop-blur-sm rounded-full px-2 py-0.5 shadow-md border border-amber-200/60 flex items-center gap-1" title="Lagt i et minne">
                         <span className="text-xs">{'\u2728'}</span>
                       </div>
+                    )}
+                    {/* Face detection overlay */}
+                    {isAdmin && onToggleTag && (
+                      <FaceOverlay
+                        imageElement={imageRefs.current.get(item.id) || null}
+                        itemId={item.id}
+                        isVisible={hoveredImageId === item.id}
+                        onTagPerson={(id, name) => onToggleTag(id, name)}
+                      />
                     )}
                     {/* Tags + person tagging (hover only) */}
                     <div className="absolute bottom-0 left-0 right-0 z-20 opacity-0 group-hover:opacity-100 transition-all duration-200" onPointerDown={e => e.stopPropagation()}>
