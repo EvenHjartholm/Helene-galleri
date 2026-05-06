@@ -13,14 +13,13 @@ interface FaceOverlayProps {
 
 
 export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPerson, existingTags, availableTags }: FaceOverlayProps) {
-  const { detecting, detect, abort } = useObjectDetection();
+  const { detecting, detect, learnFace, abort } = useObjectDetection();
   const [objects, setObjects] = useState<DetectedObject[]>([]);
   const [activeObj, setActiveObj] = useState<string | null>(null);
   const [nameInput, setNameInput] = useState('');
   const [tagged, setTagged] = useState<Set<string>>(new Set());
   const inputRef = useRef<HTMLInputElement>(null);
   const detectedForRef = useRef<string | null>(null);
-  const hasDetected = useRef(false);
 
   const tags = existingTags || [];
 
@@ -42,34 +41,34 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
     if (detectedForRef.current === imgSrc) return;
 
     detectedForRef.current = imgSrc;
-    hasDetected.current = false;
     detect(imageElement).then(detected => {
       setObjects(detected);
       setTagged(new Set());
       setActiveObj(null);
-      hasDetected.current = true;
     });
   }, [isVisible, imageElement, detect, abort]);
 
-  const handleTag = useCallback((name: string, objId?: string) => {
+  const handleTag = useCallback((name: string, obj: DetectedObject) => {
     onTagPerson(itemId, name);
-    if (objId) setTagged(prev => new Set(prev).add(objId));
+    // Learn face for future recognition
+    if (obj.label === 'person' && obj.faceDescriptor) {
+      learnFace(name, obj.faceDescriptor);
+    }
+    setTagged(prev => new Set(prev).add(obj.id));
     setActiveObj(null);
     setNameInput('');
-  }, [onTagPerson, itemId]);
+  }, [onTagPerson, itemId, learnFace]);
 
   if (!isVisible) return null;
 
-  // Objects that haven't been tagged yet in this session
   const visibleObjects = objects.filter(o => !tagged.has(o.id));
-  // How many untagged objects remain
-  const hasUntaggedObjects = visibleObjects.length > 0;
 
   return (
     <div className="absolute inset-0 z-30 pointer-events-none overflow-visible rounded-xl">
       {/* Detection boxes for untagged objects */}
-      {hasUntaggedObjects && visibleObjects.map(obj => {
+      {visibleObjects.map(obj => {
         const isPerson = obj.label === 'person';
+        const recognized = isPerson && obj.matchedName;
 
         return (
           <div key={obj.id} className="absolute pointer-events-auto"
@@ -80,21 +79,21 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
               height: `${obj.box.height * 100}%`,
             }}>
             {/* Detection rectangle */}
-            <div className="absolute inset-0 border-2 border-white/80 rounded-md"
+            <div className={`absolute inset-0 border-2 rounded-md ${recognized ? 'border-green-400/80' : 'border-white/80'}`}
               style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.2)' }} />
 
             {activeObj === obj.id ? (
-              // Full input mode (after clicking Nei/Endre or for persons without suggestions)
+              // Full input mode
               <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50 min-w-[170px]"
                 onClick={e => e.stopPropagation()}>
                 <div className="relative">
                   <input ref={inputRef} value={nameInput} onChange={e => setNameInput(e.target.value)}
-                    placeholder={isPerson ? '👤 Skriv navn...' : `Skriv hva det er...`}
+                    placeholder={isPerson ? '👤 Skriv navn...' : 'Skriv hva det er...'}
                     autoFocus
                     className="w-full text-[11px] px-2.5 py-1.5 bg-black/85 backdrop-blur-sm text-white placeholder-white/50 border border-white/20 rounded-lg focus:outline-none focus:ring-1 focus:ring-white/40 text-center"
                     onKeyDown={e => {
                       if (e.key === 'Enter' && nameInput.trim()) {
-                        handleTag(nameInput.trim(), obj.id);
+                        handleTag(nameInput.trim(), obj);
                       } else if (e.key === 'Escape') {
                         setActiveObj(null); setNameInput('');
                       }
@@ -102,7 +101,7 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
                   {suggestions.length > 0 && (
                     <div className="absolute bottom-full left-0 right-0 mb-1 bg-white/95 backdrop-blur-md rounded-lg shadow-xl border border-gray-200 overflow-hidden">
                       {suggestions.map(s => (
-                        <button key={s} onClick={() => handleTag(s, obj.id)}
+                        <button key={s} onClick={() => handleTag(s, obj)}
                           className="w-full text-left px-3 py-1.5 text-xs hover:bg-blue-50 text-gray-700 transition-colors">
                           {s}
                         </button>
@@ -111,8 +110,22 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
                   )}
                 </div>
               </div>
+            ) : recognized ? (
+              // Face recognized: "Helene Svelle?" with Ja/Nei
+              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50"
+                onClick={e => e.stopPropagation()}>
+                <div className="bg-black/80 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-xl border border-green-500/30">
+                  <div className="flex items-center gap-1.5 whitespace-nowrap">
+                    <span className="text-[10px] text-green-300 font-medium">👤 {obj.matchedName}?</span>
+                    <button onClick={() => handleTag(obj.matchedName!, obj)}
+                      className="text-[9px] font-bold bg-green-500/80 hover:bg-green-500 text-white px-2 py-0.5 rounded-full transition-colors">Ja</button>
+                    <button onClick={() => { setActiveObj(obj.id); setNameInput(''); setTimeout(() => inputRef.current?.focus(), 50); }}
+                      className="text-[9px] font-bold bg-white/20 hover:bg-white/30 text-white px-2 py-0.5 rounded-full transition-colors">Nei</button>
+                  </div>
+                </div>
+              </div>
             ) : isPerson ? (
-              // Person: "Hvem er dette?" with input + autocomplete
+              // Person not recognized: "Hvem er dette?" input
               <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50 min-w-[160px]"
                 onClick={e => e.stopPropagation()}>
                 <div className="relative">
@@ -122,7 +135,7 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
                     className="w-full text-[11px] px-2.5 py-1.5 bg-black/85 backdrop-blur-sm text-white placeholder-white/50 border border-white/20 rounded-lg focus:outline-none focus:ring-1 focus:ring-white/40 text-center"
                     onKeyDown={e => {
                       if (e.key === 'Enter' && nameInput.trim()) {
-                        handleTag(nameInput.trim(), obj.id);
+                        handleTag(nameInput.trim(), obj);
                       } else if (e.key === 'Escape') {
                         setActiveObj(null); setNameInput('');
                       }
@@ -130,7 +143,7 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
                   {activeObj === obj.id && suggestions.length > 0 && (
                     <div className="absolute bottom-full left-0 right-0 mb-1 bg-white/95 backdrop-blur-md rounded-lg shadow-xl border border-gray-200 overflow-hidden">
                       {suggestions.map(s => (
-                        <button key={s} onClick={() => handleTag(s, obj.id)}
+                        <button key={s} onClick={() => handleTag(s, obj)}
                           className="w-full text-left px-3 py-1.5 text-xs hover:bg-blue-50 text-gray-700 transition-colors">
                           {s}
                         </button>
@@ -140,14 +153,14 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
                 </div>
               </div>
             ) : (
-              // Non-person object: "🏷️ Ku?" with Ja/Endre
+              // Non-person: "🏷️ Ku?" with Ja/Endre
               <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50"
                 onClick={e => e.stopPropagation()}>
                 <div className="bg-black/80 backdrop-blur-sm rounded-lg px-2.5 py-1.5 flex items-center gap-1.5 whitespace-nowrap shadow-xl border border-white/10">
                   <span className="text-[10px] text-white/90 font-medium">
                     {'🏷️'} {obj.labelNo}?
                   </span>
-                  <button onClick={() => handleTag(obj.labelNo, obj.id)}
+                  <button onClick={() => handleTag(obj.labelNo, obj)}
                     className="text-[9px] font-bold bg-green-500/80 hover:bg-green-500 text-white px-2 py-0.5 rounded-full transition-colors">Ja</button>
                   <button onClick={() => { setActiveObj(obj.id); setNameInput(''); setTimeout(() => inputRef.current?.focus(), 50); }}
                     className="text-[9px] font-bold bg-white/20 hover:bg-white/30 text-white px-2 py-0.5 rounded-full transition-colors">Endre</button>
