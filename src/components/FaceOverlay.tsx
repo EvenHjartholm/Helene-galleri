@@ -63,7 +63,7 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
   const noFacesFound = scanDone && faces.length === 0;
 
   return (
-    <div className="absolute inset-0 z-25 pointer-events-none">
+    <div className="absolute inset-0 z-30 pointer-events-none overflow-visible rounded-xl">
       {/* Face boxes */}
       {visibleFaces.map(face => (
         <div key={face.id} className="absolute pointer-events-auto"

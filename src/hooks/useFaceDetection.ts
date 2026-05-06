@@ -19,20 +19,29 @@ interface KnownFace {
 }
 
 let modelsLoaded = false;
-let modelsLoading = false;
+let modelsPromise: Promise<void> | null = null;
 
 async function loadModels() {
-  if (modelsLoaded || modelsLoading) return;
-  modelsLoading = true;
-  try {
-    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-    modelsLoaded = true;
-  } catch (err) {
-    console.error('Failed to load face-api models:', err);
-  }
-  modelsLoading = false;
+  if (modelsLoaded) return;
+  if (modelsPromise) return modelsPromise;
+  
+  modelsPromise = (async () => {
+    try {
+      console.log('[FaceAPI] Loading models from CDN...');
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      console.log('[FaceAPI] Tiny face detector loaded');
+      await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
+      console.log('[FaceAPI] Face landmarks loaded');
+      await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+      console.log('[FaceAPI] Face recognition loaded');
+      modelsLoaded = true;
+      console.log('[FaceAPI] All models ready!');
+    } catch (err) {
+      console.error('[FaceAPI] Failed to load models:', err);
+      modelsPromise = null; // allow retry
+    }
+  })();
+  return modelsPromise;
 }
 
 function getKnownFaces(): KnownFace[] {
@@ -71,6 +80,7 @@ export function useFaceDetection() {
   }, []);
 
   const detectFaces = useCallback(async (imgElement: HTMLImageElement): Promise<DetectedFace[]> => {
+    await loadModels(); // ensure models are loaded
     if (!modelsLoaded) return [];
     
     setDetecting(true);

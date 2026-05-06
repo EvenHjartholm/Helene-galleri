@@ -334,16 +334,7 @@ export default function FreeCanvasGallery({
                         <span className="text-xs">{'\u2728'}</span>
                       </div>
                     )}
-                    {/* Face detection overlay */}
-                    {isAdmin && onToggleTag && (
-                      <FaceOverlay
-                        imageElement={imageRefs.current.get(item.id) || null}
-                        itemId={item.id}
-                        isVisible={hoveredImageId === item.id}
-                        onTagPerson={(id, name) => onToggleTag(id, name)}
-                        existingTags={(item as ImageItem).tags}
-                      />
-                    )}
+
                     {/* Tags + person tagging (hover only) */}
                     <div className="absolute bottom-0 left-0 right-0 z-20 opacity-0 group-hover:opacity-100 transition-all duration-200" onPointerDown={e => e.stopPropagation()}>
                       {/* Existing tags */}
@@ -393,6 +384,16 @@ export default function FreeCanvasGallery({
 
                     </div>
                   </div>
+                  {/* Face detection overlay (outside overflow-hidden) */}
+                  {isAdmin && onToggleTag && (
+                    <FaceOverlay
+                      imageElement={imageRefs.current.get(item.id) || null}
+                      itemId={item.id}
+                      isVisible={hoveredImageId === item.id}
+                      onTagPerson={(id, name) => onToggleTag(id, name)}
+                      existingTags={(item as ImageItem).tags}
+                    />
+                  )}
                   {/* Caption area */}
                   {(item.title || item.caption || isAdmin) && (
                     <div className={cn("bg-white/50 backdrop-blur-sm pt-2 pb-2 px-3 rounded-b-xl border-x border-b border-white/50 -mt-3 relative z-20", isAdmin && "bg-white/80 border-gray-200/50")}>
