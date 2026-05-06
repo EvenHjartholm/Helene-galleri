@@ -185,6 +185,16 @@ export default function FreeCanvasGallery({
   const [albumDropdown, setAlbumDropdown] = useState<string | null>(null);
   const [tagDropdown, setTagDropdown] = useState<string | null>(null);
   const [newTag, setNewTag] = useState('');
+  const [personTagInput, setPersonTagInput] = useState<string | null>(null); // item id showing inline tag input
+  const [personTagValue, setPersonTagValue] = useState('');
+  const personInputRef = useRef<HTMLInputElement>(null);
+
+  // Filter suggestions based on typed value
+  const tagSuggestions = useMemo(() => {
+    if (!personTagValue.trim() || !availableTags) return [];
+    const q = personTagValue.toLowerCase();
+    return availableTags.filter(t => t.toLowerCase().includes(q) && !(items.find(i => i.id === personTagInput) as ImageItem)?.tags?.includes(t));
+  }, [personTagValue, availableTags, items, personTagInput]);
 
   // Calculate canvas height from item positions
   const canvasHeight = useMemo(() => {
@@ -316,14 +326,62 @@ export default function FreeCanvasGallery({
                         <span className="text-xs">{'\u2728'}</span>
                       </div>
                     )}
-                    {/* Tags display */}
-                    {item.type === 'image' && (item as ImageItem).tags && (item as ImageItem).tags!.length > 0 && (
-                      <div className="absolute bottom-2 left-2 z-20 flex flex-wrap gap-1">
-                        {(item as ImageItem).tags!.map(tag => (
-                          <span key={tag} className="bg-white/85 backdrop-blur-sm text-[9px] font-semibold text-gray-600 px-1.5 py-0.5 rounded-full shadow-sm">{tag}</span>
-                        ))}
-                      </div>
-                    )}
+                    {/* Tags + person tagging (hover only) */}
+                    <div className="absolute bottom-0 left-0 right-0 z-20 opacity-0 group-hover:opacity-100 transition-all duration-200" onPointerDown={e => e.stopPropagation()}>
+                      {/* Existing tags */}
+                      {item.type === 'image' && (item as ImageItem).tags && (item as ImageItem).tags!.length > 0 && (
+                        <div className="flex flex-wrap gap-1 px-2 pb-1.5 pt-1">
+                          {(item as ImageItem).tags!.map(tag => (
+                            <span key={tag} className="bg-black/60 backdrop-blur-sm text-[9px] font-medium text-white px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                              {tag}
+                              {isAdmin && onToggleTag && (
+                                <button onClick={(e) => { e.stopPropagation(); onToggleTag(item.id, tag); }}
+                                  className="text-white/60 hover:text-white ml-0.5 leading-none">&times;</button>
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {/* Inline person tag input */}
+                      {isAdmin && onToggleTag && personTagInput === item.id && (
+                        <div className="px-2 pb-2 pt-1" onClick={e => e.stopPropagation()}>
+                          <div className="relative">
+                            <input ref={personInputRef} value={personTagValue} onChange={e => setPersonTagValue(e.target.value)}
+                              placeholder="Skriv navn..."
+                              className="w-full text-xs px-2.5 py-1.5 bg-black/70 backdrop-blur-sm text-white placeholder-white/50 border border-white/20 rounded-lg focus:outline-none focus:ring-1 focus:ring-white/40"
+                              onKeyDown={e => {
+                                if (e.key === 'Enter' && personTagValue.trim()) {
+                                  onToggleTag(item.id, personTagValue.trim());
+                                  setPersonTagValue('');
+                                  setPersonTagInput(null);
+                                } else if (e.key === 'Escape') {
+                                  setPersonTagInput(null);
+                                  setPersonTagValue('');
+                                }
+                              }} />
+                            {tagSuggestions.length > 0 && (
+                              <div className="absolute bottom-full left-0 right-0 mb-1 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden max-h-[120px] overflow-y-auto">
+                                {tagSuggestions.map(s => (
+                                  <button key={s} onClick={() => { onToggleTag(item.id, s); setPersonTagValue(''); setPersonTagInput(null); }}
+                                    className="w-full text-left px-3 py-1.5 text-xs hover:bg-blue-50 text-gray-700 flex items-center gap-1.5 transition-colors">
+                                    <span className="text-gray-400">{'👤'}</span> {s}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {/* Add tag button (admin) */}
+                      {isAdmin && onToggleTag && personTagInput !== item.id && (
+                        <div className="px-2 pb-1.5">
+                          <button onClick={(e) => { e.stopPropagation(); setPersonTagInput(item.id); setPersonTagValue(''); setTimeout(() => personInputRef.current?.focus(), 50); }}
+                            className="text-[10px] font-medium text-white/80 hover:text-white bg-black/40 hover:bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full transition-colors flex items-center gap-1">
+                            {'👤'} Tagg person
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   {/* Caption area */}
                   {(item.title || item.caption || isAdmin) && (
