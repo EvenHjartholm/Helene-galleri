@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Download, GripHorizontal, Trash2, Maximize2, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -84,7 +85,7 @@ function SizeControl({ current, onChange, label }: { current?: TextSize; onChang
   );
 }
 
-// --- LIGHTBOX ---
+// --- LIGHTBOX (rendered via Portal to escape z-index stacking) ---
 function Lightbox({ images, currentIndex, onClose, onNext, onPrev }: { images: ImageItem[]; currentIndex: number; onClose: () => void; onNext: () => void; onPrev: () => void }) {
   const img = images[currentIndex];
 
@@ -96,26 +97,41 @@ function Lightbox({ images, currentIndex, onClose, onNext, onPrev }: { images: I
       if (e.key === 'ArrowLeft') onPrev();
     };
     window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
+    // Prevent body scroll while lightbox is open
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', handleKey);
+      document.body.style.overflow = '';
+    };
   }, [onClose, onNext, onPrev]);
 
-  return (
+  const content = (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-md"
+      className="fixed inset-0 flex items-center justify-center bg-black/95 backdrop-blur-md"
+      style={{ zIndex: 99999 }}
       onClick={onClose}
     >
-      {/* CLOSE BUTTON — large and always visible */}
+      {/* ✕ CLOSE BUTTON — large, solid, always visible */}
       <button
         onClick={e => { e.stopPropagation(); onClose(); }}
-        className="absolute top-4 right-4 md:top-6 md:right-6 z-[210] flex items-center gap-2 bg-white/20 hover:bg-white/40 text-white px-4 py-2.5 rounded-full transition-all backdrop-blur-sm border border-white/20"
+        className="absolute top-5 right-5 flex items-center gap-2 bg-white text-gray-900 hover:bg-gray-200 pl-4 pr-5 py-3 rounded-full shadow-2xl transition-all font-semibold text-sm"
+        style={{ zIndex: 100000 }}
       >
         <X size={20} strokeWidth={2.5} />
-        <span className="text-sm font-medium hidden sm:inline">Lukk</span>
+        Lukk
       </button>
 
       {/* Prev/Next */}
-      <button onClick={e => { e.stopPropagation(); onPrev(); }} className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white p-3 md:p-4 rounded-full hover:bg-white/10 z-[210] transition-all"><ChevronLeft size={36} strokeWidth={1.5} /></button>
-      <button onClick={e => { e.stopPropagation(); onNext(); }} className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white p-3 md:p-4 rounded-full hover:bg-white/10 z-[210] transition-all"><ChevronRight size={36} strokeWidth={1.5} /></button>
+      <button onClick={e => { e.stopPropagation(); onPrev(); }}
+        className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white p-3 md:p-4 rounded-full hover:bg-white/10 transition-all"
+        style={{ zIndex: 100000 }}>
+        <ChevronLeft size={36} strokeWidth={1.5} />
+      </button>
+      <button onClick={e => { e.stopPropagation(); onNext(); }}
+        className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white p-3 md:p-4 rounded-full hover:bg-white/10 transition-all"
+        style={{ zIndex: 100000 }}>
+        <ChevronRight size={36} strokeWidth={1.5} />
+      </button>
 
       {/* Image */}
       <div className="w-full h-full flex flex-col items-center justify-center p-4 md:p-16 pb-28 relative" onClick={e => e.stopPropagation()}>
@@ -138,6 +154,8 @@ function Lightbox({ images, currentIndex, onClose, onNext, onPrev }: { images: I
       </div>
     </motion.div>
   );
+
+  return ReactDOM.createPortal(content, document.body);
 }
 
 // --- MAIN GALLERY CANVAS ---
