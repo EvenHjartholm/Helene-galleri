@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Lock, Plus, Trash2, Save, Image as ImageIcon, Type, LogOut, FilePlus, ArrowLeft, ArrowRight, Settings, Eye, EyeOff, Home, FolderOpen } from 'lucide-react';
+import { X, Lock, Plus, Trash2, Save, Image as ImageIcon, Type, LogOut, FilePlus, ArrowLeft, ArrowRight, Settings, Eye, EyeOff, Home, FolderOpen, PanelLeft, PanelLeftClose } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { supabase } from './lib/supabase';
@@ -768,95 +768,93 @@ function GalleryView({
   }
 
   return (
-    <div className="min-h-screen bg-offwhite pb-24 relative">
+    <div className="min-h-screen bg-offwhite relative overflow-x-hidden">
       <NoiseTexture />
       
-      {/* ===== SIDEBAR OVERLAY ===== */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50" onClick={() => setSidebarOpen(false)} />
-            <motion.aside
-              initial={{ x: -320 }} animate={{ x: 0 }} exit={{ x: -320 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed top-0 left-0 bottom-0 w-[300px] bg-white shadow-2xl z-50 flex flex-col"
-            >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                <h2 className="font-serif text-lg text-gray-900 font-medium">Samlinger</h2>
-                <button onClick={() => setSidebarOpen(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-700"><X size={18} /></button>
-              </div>
-              <button onClick={() => { setSelectedAlbumId(null); setSidebarOpen(false); }}
-                className={cn("flex items-center gap-3 px-5 py-3.5 text-sm font-medium transition-all border-b border-gray-50",
-                  !selectedAlbumId ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+      {/* ===== SIDEBAR ===== */}
+      <aside
+        className={cn(
+          "fixed top-0 left-0 bottom-0 w-[280px] bg-white border-r border-gray-100 z-50 flex flex-col transition-transform duration-300 ease-out",
+          sidebarOpen ? "translate-x-0 shadow-xl" : "-translate-x-full"
+        )}
+      >
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <h2 className="font-serif text-lg text-gray-900 font-medium">Samlinger</h2>
+          <button onClick={() => setSidebarOpen(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-700">
+            <PanelLeftClose size={18} />
+          </button>
+        </div>
+        <button onClick={() => { setSelectedAlbumId(null); setSidebarOpen(false); }}
+          className={cn("flex items-center gap-3 px-5 py-3.5 text-sm font-medium transition-all border-b border-gray-50",
+            !selectedAlbumId ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+          )}>
+          <Home size={18} /><span>Forside</span>
+          {!selectedAlbumId && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500" />}
+        </button>
+        <div className="flex-1 overflow-y-auto">
+          {visibleAlbums.length === 0 && (
+            <div className="px-5 py-8 text-center text-gray-300 text-sm">
+              <FolderOpen size={32} className="mx-auto mb-2 opacity-40" /><p>Ingen samlinger ennå</p>
+            </div>
+          )}
+          {visibleAlbums.map(album => {
+            const imgCount = album.items.filter(i => i.type === 'image').length;
+            const isActive = selectedAlbumId === album.id;
+            const coverImg = album.items.find((i): i is ImageItem => i.type === 'image');
+            return (
+              <button key={album.id} onClick={() => { setSelectedAlbumId(album.id); setSidebarOpen(false); }}
+                className={cn("w-full flex items-center gap-3 px-5 py-3 text-left transition-all group relative",
+                  isActive ? "bg-gray-100" : "hover:bg-gray-50", album.hidden && "opacity-50"
                 )}>
-                <Home size={18} /><span>Forside</span>
-                {!selectedAlbumId && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500" />}
-              </button>
-              <div className="flex-1 overflow-y-auto">
-                {visibleAlbums.length === 0 && (
-                  <div className="px-5 py-8 text-center text-gray-300 text-sm">
-                    <FolderOpen size={32} className="mx-auto mb-2 opacity-40" /><p>Ingen samlinger ennå</p>
+                {coverImg ? (
+                  <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                    <img src={coverImg.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 text-lg">{album.emoji || '📁'}</div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-medium text-gray-800 truncate">{album.title}</span>
+                    {album.hidden && <EyeOff size={10} className="text-gray-400 flex-shrink-0" />}
+                  </div>
+                  <span className="text-xs text-gray-400">{imgCount} {imgCount === 1 ? 'bilde' : 'bilder'}</span>
+                </div>
+                {isActive && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />}
+                {effectiveAdmin && (
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1"
+                    onClick={e => e.stopPropagation()}>
+                    <button onClick={() => onUpdateAlbum(album.id, { hidden: !album.hidden })}
+                      className="p-1 rounded hover:bg-gray-200 text-gray-400" title={album.hidden ? 'Vis' : 'Skjul'}>
+                      {album.hidden ? <Eye size={12} /> : <EyeOff size={12} />}
+                    </button>
+                    <button onClick={() => { if (confirm(`Slett "${album.title}"?`)) onDeleteAlbum(album.id); }}
+                      className="p-1 rounded hover:bg-red-100 text-red-400"><Trash2 size={12} /></button>
                   </div>
                 )}
-                {visibleAlbums.map(album => {
-                  const imgCount = album.items.filter(i => i.type === 'image').length;
-                  const isActive = selectedAlbumId === album.id;
-                  const coverImg = album.items.find((i): i is ImageItem => i.type === 'image');
-                  return (
-                    <button key={album.id} onClick={() => { setSelectedAlbumId(album.id); setSidebarOpen(false); }}
-                      className={cn("w-full flex items-center gap-3 px-5 py-3 text-left transition-all group relative",
-                        isActive ? "bg-gray-100" : "hover:bg-gray-50", album.hidden && "opacity-50"
-                      )}>
-                      {coverImg ? (
-                        <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                          <img src={coverImg.thumbnailUrl} alt="" className="w-full h-full object-cover" />
-                        </div>
-                      ) : (
-                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 text-lg">{album.emoji || '📁'}</div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-sm font-medium text-gray-800 truncate">{album.title}</span>
-                          {album.hidden && <EyeOff size={10} className="text-gray-400 flex-shrink-0" />}
-                        </div>
-                        <span className="text-xs text-gray-400">{imgCount} {imgCount === 1 ? 'bilde' : 'bilder'}</span>
-                      </div>
-                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />}
-                      {effectiveAdmin && (
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1"
-                          onClick={e => e.stopPropagation()}>
-                          <button onClick={() => onUpdateAlbum(album.id, { hidden: !album.hidden })}
-                            className="p-1 rounded hover:bg-gray-200 text-gray-400" title={album.hidden ? 'Vis' : 'Skjul'}>
-                            {album.hidden ? <Eye size={12} /> : <EyeOff size={12} />}
-                          </button>
-                          <button onClick={() => { if (confirm(`Slett "${album.title}"?`)) onDeleteAlbum(album.id); }}
-                            className="p-1 rounded hover:bg-red-100 text-red-400"><Trash2 size={12} /></button>
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-              {effectiveAdmin && (
-                <div className="border-t border-gray-100 p-3">
-                  <button onClick={() => { setShowCreateAlbum(true); setSidebarOpen(false); }}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all">
-                    <Plus size={16} /> Ny samling
-                  </button>
-                </div>
-              )}
-            </motion.aside>
-          </>
+              </button>
+            );
+          })}
+        </div>
+        {effectiveAdmin && (
+          <div className="border-t border-gray-100 p-3">
+            <button onClick={() => { setShowCreateAlbum(true); setSidebarOpen(false); }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all">
+              <Plus size={16} /> Ny samling
+            </button>
+          </div>
         )}
-      </AnimatePresence>
+      </aside>
+
+      {/* ===== CONTENT WRAPPER (shifts right when sidebar open) ===== */}
+      <div className={cn("transition-all duration-300 ease-out pb-24", sidebarOpen ? "ml-[280px]" : "ml-0")}>
 
       {/* ===== NAV BAR ===== */}
       <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100/50">
         <div className="max-w-[1600px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-             <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-1 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all" title="Åpne samlinger">
-               <FolderOpen size={20} />
+             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 -ml-1 text-gray-400 hover:text-gray-900 rounded-lg transition-all" title={sidebarOpen ? 'Lukk meny' : 'Åpne samlinger'}>
+               <PanelLeft size={20} />
              </button>
              <div className="w-px h-6 bg-gray-200" />
              <h1 className="font-serif text-xl text-gray-900 tracking-tight font-medium">
@@ -917,6 +915,7 @@ function GalleryView({
             lightboxIndex={albumLightboxIndex} setLightboxIndex={setAlbumLightboxIndex} openLightbox={openAlbumLightbox} />
         )}
       </main>
+      </div> {/* end content wrapper */}
 
       {/* Floating toolbar */}
       <AnimatePresence>
