@@ -304,7 +304,7 @@ export default function FreeCanvasGallery({
                 </div>
               ) : (
                 <div className="relative" onClick={() => !isAdmin && openLightbox(item as ImageItem)}
-                  onMouseEnter={() => isAdmin && setHoveredImageId(item.id)}
+                  onMouseEnter={() => setHoveredImageId(item.id)}
                   onMouseLeave={() => { if (hoveredImageId === item.id) setHoveredImageId(null); }}>
                   <div className={cn("relative overflow-hidden bg-gray-100 shadow-md transition-all duration-300 rounded-xl", !isAdmin && "hover:shadow-2xl cursor-zoom-in")}>
                     {/* Blur placeholder */}
@@ -326,35 +326,17 @@ export default function FreeCanvasGallery({
                       </div>
                     )}
 
-                    {/* Existing tags display (hover only) */}
-                    {item.type === 'image' && (item as ImageItem).tags && (item as ImageItem).tags!.length > 0 && (
-                      <div className="absolute bottom-0 left-0 right-0 z-20 opacity-0 group-hover:opacity-100 transition-all duration-200 pb-8" onPointerDown={e => e.stopPropagation()}>
-                        <div className="flex flex-wrap gap-1 px-2 pb-1.5 pt-1">
-                          {(item as ImageItem).tags!.map(tag => (
-                            <span key={tag} className="bg-black/60 backdrop-blur-sm text-[9px] font-medium text-white px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
-                              {tag}
-                              {isAdmin && onToggleTag && (
-                                <button onClick={(e) => { e.stopPropagation(); onToggleTag(item.id, tag); }}
-                                  className="text-white/60 hover:text-white ml-0.5 leading-none">&times;</button>
-                              )}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
 
                   </div>
-                  {/* Face detection overlay (outside overflow-hidden) */}
-                  {isAdmin && onToggleTag && (
-                    <FaceOverlay
-                      imageElement={imageRefs.current.get(item.id) || null}
-                      itemId={item.id}
-                      isVisible={hoveredImageId === item.id}
-                      onTagPerson={(id, name) => onToggleTag(id, name)}
-                      existingTags={(item as ImageItem).tags}
-                      availableTags={availableTags}
-                    />
-                  )}
+                  {/* Object detection overlay (outside overflow-hidden) */}
+                  <FaceOverlay
+                    imageElement={imageRefs.current.get(item.id) || null}
+                    itemId={item.id}
+                    isVisible={hoveredImageId === item.id}
+                    onTagPerson={isAdmin && onToggleTag ? (id, name) => onToggleTag(id, name) : () => {}}
+                    existingTags={(item as ImageItem).tags}
+                    availableTags={availableTags}
+                  />
                   {/* Caption area */}
                   {(item.title || item.caption || isAdmin) && (
                     <div className={cn("bg-white/50 backdrop-blur-sm pt-2 pb-2 px-3 rounded-b-xl border-x border-b border-white/50 -mt-3 relative z-20", isAdmin && "bg-white/80 border-gray-200/50")}>

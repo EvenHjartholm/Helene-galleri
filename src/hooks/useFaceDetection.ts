@@ -1,148 +1,95 @@
-import * as faceapi from '@vladmandic/face-api';
+import * as tf from '@tensorflow/tfjs';
+import * as cocoSsd from '@tensorflow-models/coco-ssd';
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1/model';
-const STORAGE_KEY = 'hs-gallery-known-faces';
-const MATCH_THRESHOLD = 0.5; // lower = stricter match
+// Norwegian translations for COCO-SSD labels
+const LABEL_NO: Record<string, string> = {
+  person: 'Person', bird: 'Fugl', cat: 'Katt', dog: 'Hund',
+  horse: 'Hest', sheep: 'Sau', cow: 'Ku', elephant: 'Elefant',
+  bear: 'Bjørn', zebra: 'Sebra', giraffe: 'Sjiraff',
+  car: 'Bil', bicycle: 'Sykkel', motorcycle: 'Motorsykkel',
+  bus: 'Buss', train: 'Tog', truck: 'Lastebil', boat: 'Båt',
+  umbrella: 'Paraply', backpack: 'Ryggsekk', surfboard: 'Surfebrett',
+  skis: 'Ski', snowboard: 'Snowboard', kite: 'Drage',
+  'sports ball': 'Ball', 'teddy bear': 'Bamse',
+  cake: 'Kake', pizza: 'Pizza', donut: 'Smultring',
+  apple: 'Eple', banana: 'Banan', orange: 'Appelsin',
+  bottle: 'Flaske', 'wine glass': 'Vinglass', cup: 'Kopp',
+  chair: 'Stol', couch: 'Sofa', bed: 'Seng',
+  book: 'Bok', clock: 'Klokke', vase: 'Vase',
+  laptop: 'Laptop', tv: 'TV', 'cell phone': 'Mobil',
+};
 
-export interface DetectedFace {
+export interface DetectedObject {
   id: string;
-  box: { x: number; y: number; width: number; height: number }; // relative to image (0-1)
-  matchedName: string | null;
-  matchDistance: number;
-  descriptor: Float32Array;
+  label: string;       // English COCO label
+  labelNo: string;     // Norwegian label
+  score: number;       // confidence 0-1
+  box: { x: number; y: number; width: number; height: number }; // relative 0-1
 }
 
-interface KnownFace {
-  name: string;
-  descriptors: number[][]; // stored as plain arrays for JSON serialization
-}
+let model: cocoSsd.ObjectDetection | null = null;
+let modelPromise: Promise<void> | null = null;
 
-let modelsLoaded = false;
-let modelsPromise: Promise<void> | null = null;
+async function loadModel() {
+  if (model) return;
+  if (modelPromise) return modelPromise;
 
-async function loadModels() {
-  if (modelsLoaded) return;
-  if (modelsPromise) return modelsPromise;
-  
-  modelsPromise = (async () => {
+  modelPromise = (async () => {
     try {
-      console.log('[FaceAPI] Loading models from CDN...');
-      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-      console.log('[FaceAPI] Tiny face detector loaded');
-      await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
-      console.log('[FaceAPI] Face landmarks loaded');
-      await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-      console.log('[FaceAPI] Face recognition loaded');
-      modelsLoaded = true;
-      console.log('[FaceAPI] All models ready!');
+      console.log('[ObjectDetection] Loading COCO-SSD model...');
+      await tf.ready();
+      model = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
+      console.log('[ObjectDetection] Model ready!');
     } catch (err) {
-      console.error('[FaceAPI] Failed to load models:', err);
-      modelsPromise = null; // allow retry
+      console.error('[ObjectDetection] Failed to load model:', err);
+      modelPromise = null;
     }
   })();
-  return modelsPromise;
+  return modelPromise;
 }
 
-function getKnownFaces(): KnownFace[] {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch { return []; }
-}
-
-function saveKnownFaces(faces: KnownFace[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(faces));
-}
-
-function findBestMatch(descriptor: Float32Array, knownFaces: KnownFace[]): { name: string; distance: number } | null {
-  let bestMatch: { name: string; distance: number } | null = null;
-  
-  for (const known of knownFaces) {
-    for (const desc of known.descriptors) {
-      const knownDesc = new Float32Array(desc);
-      const distance = faceapi.euclideanDistance(descriptor, knownDesc);
-      if (distance < MATCH_THRESHOLD && (!bestMatch || distance < bestMatch.distance)) {
-        bestMatch = { name: known.name, distance };
-      }
-    }
-  }
-  return bestMatch;
-}
-
-export function useFaceDetection() {
-  const [isReady, setIsReady] = useState(modelsLoaded);
+export function useObjectDetection() {
   const [detecting, setDetecting] = useState(false);
   const abortRef = useRef(false);
 
-  useEffect(() => {
-    loadModels().then(() => setIsReady(true));
-  }, []);
+  useEffect(() => { loadModel(); }, []);
 
-  const detectFaces = useCallback(async (imgElement: HTMLImageElement): Promise<DetectedFace[]> => {
-    await loadModels(); // ensure models are loaded
-    if (!modelsLoaded) return [];
-    
+  const detect = useCallback(async (imgElement: HTMLImageElement): Promise<DetectedObject[]> => {
+    await loadModel();
+    if (!model) return [];
+
     setDetecting(true);
     abortRef.current = false;
-    
-    try {
-      const detections = await faceapi
-        .detectAllFaces(imgElement, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.45 }))
-        .withFaceLandmarks(true)
-        .withFaceDescriptors();
 
+    try {
+      const predictions = await model.detect(imgElement, 10, 0.4);
       if (abortRef.current) return [];
-      
-      const knownFaces = getKnownFaces();
+
       const imgW = imgElement.naturalWidth || imgElement.width;
       const imgH = imgElement.naturalHeight || imgElement.height;
-      
-      return detections.map((det, i) => {
-        const box = det.detection.box;
-        const match = findBestMatch(det.descriptor, knownFaces);
-        
-        return {
-          id: `face-${i}-${Date.now()}`,
-          box: {
-            x: box.x / imgW,
-            y: box.y / imgH,
-            width: box.width / imgW,
-            height: box.height / imgH,
-          },
-          matchedName: match?.name || null,
-          matchDistance: match?.distance || 1,
-          descriptor: det.descriptor,
-        };
-      });
+
+      return predictions.map((pred, i) => ({
+        id: `obj-${i}-${Date.now()}`,
+        label: pred.class,
+        labelNo: LABEL_NO[pred.class] || pred.class,
+        score: pred.score,
+        box: {
+          x: pred.bbox[0] / imgW,
+          y: pred.bbox[1] / imgH,
+          width: pred.bbox[2] / imgW,
+          height: pred.bbox[3] / imgH,
+        },
+      }));
     } catch (err: any) {
-      console.error('[FaceAPI] Detection failed:', err?.message || err);
-      if (err?.message?.includes('SecurityError') || err?.message?.includes('cross-origin')) {
-        console.warn('[FaceAPI] CORS issue: Image needs crossOrigin="anonymous" attribute');
-      }
+      console.error('[ObjectDetection] Detection failed:', err?.message || err);
       return [];
     } finally {
       setDetecting(false);
     }
   }, []);
 
-  const learnFace = useCallback((name: string, descriptor: Float32Array) => {
-    const knownFaces = getKnownFaces();
-    const existing = knownFaces.find(f => f.name === name);
-    if (existing) {
-      // Add descriptor (keep max 5 per person for performance)
-      if (existing.descriptors.length < 5) {
-        existing.descriptors.push(Array.from(descriptor));
-      }
-    } else {
-      knownFaces.push({ name, descriptors: [Array.from(descriptor)] });
-    }
-    saveKnownFaces(knownFaces);
-  }, []);
+  const abort = useCallback(() => { abortRef.current = true; }, []);
 
-  const abort = useCallback(() => {
-    abortRef.current = true;
-  }, []);
-
-  return { isReady, detecting, detectFaces, learnFace, abort };
+  return { detecting, detect, abort };
 }
