@@ -186,18 +186,8 @@ export default function FreeCanvasGallery({
   const [albumDropdown, setAlbumDropdown] = useState<string | null>(null);
   const [tagDropdown, setTagDropdown] = useState<string | null>(null);
   const [newTag, setNewTag] = useState('');
-  const [personTagInput, setPersonTagInput] = useState<string | null>(null);
-  const [personTagValue, setPersonTagValue] = useState('');
-  const personInputRef = useRef<HTMLInputElement>(null);
   const [hoveredImageId, setHoveredImageId] = useState<string | null>(null);
   const imageRefs = useRef<Map<string, HTMLImageElement>>(new Map());
-
-  // Filter suggestions based on typed value
-  const tagSuggestions = useMemo(() => {
-    if (!personTagValue.trim() || !availableTags) return [];
-    const q = personTagValue.toLowerCase();
-    return availableTags.filter(t => t.toLowerCase().includes(q) && !(items.find(i => i.id === personTagInput) as ImageItem)?.tags?.includes(t));
-  }, [personTagValue, availableTags, items, personTagInput]);
 
 
 
@@ -336,10 +326,9 @@ export default function FreeCanvasGallery({
                       </div>
                     )}
 
-                    {/* Tags + person tagging (hover only) */}
-                    <div className="absolute bottom-0 left-0 right-0 z-20 opacity-0 group-hover:opacity-100 transition-all duration-200" onPointerDown={e => e.stopPropagation()}>
-                      {/* Existing tags */}
-                      {item.type === 'image' && (item as ImageItem).tags && (item as ImageItem).tags!.length > 0 && (
+                    {/* Existing tags display (hover only) */}
+                    {item.type === 'image' && (item as ImageItem).tags && (item as ImageItem).tags!.length > 0 && (
+                      <div className="absolute bottom-0 left-0 right-0 z-20 opacity-0 group-hover:opacity-100 transition-all duration-200 pb-8" onPointerDown={e => e.stopPropagation()}>
                         <div className="flex flex-wrap gap-1 px-2 pb-1.5 pt-1">
                           {(item as ImageItem).tags!.map(tag => (
                             <span key={tag} className="bg-black/60 backdrop-blur-sm text-[9px] font-medium text-white px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
@@ -351,39 +340,9 @@ export default function FreeCanvasGallery({
                             </span>
                           ))}
                         </div>
-                      )}
-                      {/* Inline person tag input */}
-                      {isAdmin && onToggleTag && personTagInput === item.id && (
-                        <div className="px-2 pb-2 pt-1" onClick={e => e.stopPropagation()}>
-                          <div className="relative">
-                            <input ref={personInputRef} value={personTagValue} onChange={e => setPersonTagValue(e.target.value)}
-                              placeholder="Skriv navn..."
-                              className="w-full text-xs px-2.5 py-1.5 bg-black/70 backdrop-blur-sm text-white placeholder-white/50 border border-white/20 rounded-lg focus:outline-none focus:ring-1 focus:ring-white/40"
-                              onKeyDown={e => {
-                                if (e.key === 'Enter' && personTagValue.trim()) {
-                                  onToggleTag(item.id, personTagValue.trim());
-                                  setPersonTagValue('');
-                                  setPersonTagInput(null);
-                                } else if (e.key === 'Escape') {
-                                  setPersonTagInput(null);
-                                  setPersonTagValue('');
-                                }
-                              }} />
-                            {tagSuggestions.length > 0 && (
-                              <div className="absolute bottom-full left-0 right-0 mb-1 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden max-h-[120px] overflow-y-auto">
-                                {tagSuggestions.map(s => (
-                                  <button key={s} onClick={() => { onToggleTag(item.id, s); setPersonTagValue(''); setPersonTagInput(null); }}
-                                    className="w-full text-left px-3 py-1.5 text-xs hover:bg-blue-50 text-gray-700 flex items-center gap-1.5 transition-colors">
-                                    <span className="text-gray-400">{'👤'}</span> {s}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
+                      </div>
+                    )}
 
-                    </div>
                   </div>
                   {/* Face detection overlay (outside overflow-hidden) */}
                   {isAdmin && onToggleTag && (
@@ -393,6 +352,7 @@ export default function FreeCanvasGallery({
                       isVisible={hoveredImageId === item.id}
                       onTagPerson={(id, name) => onToggleTag(id, name)}
                       existingTags={(item as ImageItem).tags}
+                      availableTags={availableTags}
                     />
                   )}
                   {/* Caption area */}
