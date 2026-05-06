@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, Download, GripHorizontal, Trash2, Maximize2, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Download, GripHorizontal, Trash2, Maximize2, AlignLeft, AlignCenter, AlignRight, FolderPlus } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getTinyUrl } from './hooks/useGallerySync';
-import type { GalleryItem, ImageItem, TextSize } from './types';
+import type { GalleryItem, ImageItem, TextSize, Album } from './types';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -161,7 +161,8 @@ function Lightbox({ images, currentIndex, onClose, onNext, onPrev }: { images: I
 // --- MAIN GALLERY CANVAS ---
 export default function FreeCanvasGallery({
   isAdmin, items, imageItems, onUpdateItem, onDeleteItem,
-  lightboxIndex, setLightboxIndex, openLightbox
+  lightboxIndex, setLightboxIndex, openLightbox,
+  albums, onAddToAlbum
 }: {
   isAdmin: boolean;
   items: GalleryItem[];
@@ -171,10 +172,13 @@ export default function FreeCanvasGallery({
   lightboxIndex: number | null;
   setLightboxIndex: (i: number | null) => void;
   openLightbox: (img: ImageItem) => void;
+  albums?: Album[];
+  onAddToAlbum?: (imageItem: ImageItem, albumId: string) => void;
 }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [albumDropdown, setAlbumDropdown] = useState<string | null>(null); // item id
 
   // Calculate canvas height from item positions
   const canvasHeight = useMemo(() => {
@@ -314,6 +318,27 @@ export default function FreeCanvasGallery({
                       <div className="flex items-center gap-1 bg-white/95 backdrop-blur-sm shadow-lg rounded-lg p-1 border border-gray-200/80">
                         <SizeControl label="T" current={item.titleSize || 'lg'} onChange={s => onUpdateItem(item.id, { titleSize: s })} />
                         <div className="w-px h-4 bg-gray-200" />
+                        {/* Add to album */}
+                        {albums && albums.length > 0 && onAddToAlbum && (
+                          <div className="relative">
+                            <button onClick={() => setAlbumDropdown(albumDropdown === item.id ? null : item.id)}
+                              className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded" title="Legg i samling">
+                              <FolderPlus size={12} />
+                            </button>
+                            {albumDropdown === item.id && (
+                              <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-50 min-w-[180px]">
+                                <div className="px-3 py-2 text-[10px] uppercase font-bold text-gray-400 tracking-wider border-b border-gray-100">Legg i samling</div>
+                                {albums.map(a => (
+                                  <button key={a.id} onClick={() => { onAddToAlbum(item as ImageItem, a.id); setAlbumDropdown(null); }}
+                                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 transition-colors">
+                                    <span>{a.emoji || '📁'}</span>
+                                    <span className="truncate">{a.title}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
                         <button onClick={() => setItemToDelete(item.id)} className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"><Trash2 size={12} /></button>
                       </div>
                     </div>

@@ -58,7 +58,9 @@ export interface Album {
   description?: string;
   coverImageId?: string;
   date?: string;        // "2024-06" or "2024-06-15"
+  location?: string;    // "Italia", "Hvaler", "Oslo"
   hidden?: boolean;     // hidden from guest view
   sortOrder?: number;
+  albumType?: 'album' | 'memory'; // 'memory' = iPhone-style minner
   items: GalleryItem[];
 }
