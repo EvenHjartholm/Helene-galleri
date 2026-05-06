@@ -87,20 +87,52 @@ function SizeControl({ current, onChange, label }: { current?: TextSize; onChang
 // --- LIGHTBOX ---
 function Lightbox({ images, currentIndex, onClose, onNext, onPrev }: { images: ImageItem[]; currentIndex: number; onClose: () => void; onNext: () => void; onPrev: () => void }) {
   const img = images[currentIndex];
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight') onNext();
+      if (e.key === 'ArrowLeft') onPrev();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [onClose, onNext, onPrev]);
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B0B0B]/90 backdrop-blur-sm" onClick={onClose}>
-      <button onClick={e => { e.stopPropagation(); onClose(); }} className="absolute top-4 right-4 md:top-6 md:right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full z-50"><X size={24} /></button>
-      <button onClick={e => { e.stopPropagation(); onPrev(); }} className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-4 rounded-full hover:bg-white/10 z-40 hidden md:block"><ChevronLeft size={40} strokeWidth={1} /></button>
-      <button onClick={e => { e.stopPropagation(); onNext(); }} className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-4 rounded-full hover:bg-white/10 z-40 hidden md:block"><ChevronRight size={40} strokeWidth={1} /></button>
-      <div className="w-full h-full flex flex-col items-center justify-center p-4 md:p-12 pb-24 relative" onClick={e => e.stopPropagation()}>
-        <motion.div key={img.id} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="relative max-h-full max-w-full flex justify-center shadow-2xl">
-          <img src={img.largeUrl} alt={img.altText} className="max-h-[80vh] md:max-h-[85vh] w-auto object-contain rounded-sm select-none" />
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-md"
+      onClick={onClose}
+    >
+      {/* CLOSE BUTTON — large and always visible */}
+      <button
+        onClick={e => { e.stopPropagation(); onClose(); }}
+        className="absolute top-4 right-4 md:top-6 md:right-6 z-[210] flex items-center gap-2 bg-white/20 hover:bg-white/40 text-white px-4 py-2.5 rounded-full transition-all backdrop-blur-sm border border-white/20"
+      >
+        <X size={20} strokeWidth={2.5} />
+        <span className="text-sm font-medium hidden sm:inline">Lukk</span>
+      </button>
+
+      {/* Prev/Next */}
+      <button onClick={e => { e.stopPropagation(); onPrev(); }} className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white p-3 md:p-4 rounded-full hover:bg-white/10 z-[210] transition-all"><ChevronLeft size={36} strokeWidth={1.5} /></button>
+      <button onClick={e => { e.stopPropagation(); onNext(); }} className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white p-3 md:p-4 rounded-full hover:bg-white/10 z-[210] transition-all"><ChevronRight size={36} strokeWidth={1.5} /></button>
+
+      {/* Image */}
+      <div className="w-full h-full flex flex-col items-center justify-center p-4 md:p-16 pb-28 relative" onClick={e => e.stopPropagation()}>
+        <motion.div key={img.id} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="relative max-h-full max-w-full flex justify-center">
+          <img src={img.largeUrl} alt={img.altText} className="max-h-[80vh] md:max-h-[88vh] w-auto object-contain rounded select-none shadow-2xl" />
         </motion.div>
+
+        {/* Bottom info bar */}
         <div className="absolute bottom-6 left-0 right-0 text-center pointer-events-none">
-          <div className="inline-flex flex-col items-center pointer-events-auto bg-black/40 backdrop-blur-md px-6 py-3 rounded-full border border-white/10">
+          <div className="inline-flex flex-col items-center pointer-events-auto bg-black/50 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10">
             {img.title && <h3 className="text-white text-lg font-serif italic mb-1">{img.title}</h3>}
-            {img.caption && <p className="text-white/80 text-sm font-medium mb-3 max-w-md text-center">{img.caption}</p>}
-            <a href={img.originalUrl} download target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-white/60 hover:text-white transition-colors"><Download size={14} /> Last ned original</a>
+            {img.caption && <p className="text-white/80 text-sm mb-2 max-w-md text-center">{img.caption}</p>}
+            <div className="flex items-center gap-4">
+              <a href={img.originalUrl} download target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-white/60 hover:text-white transition-colors"><Download size={14} /> Last ned</a>
+              <span className="text-white/20">•</span>
+              <span className="text-xs text-white/40">{currentIndex + 1} / {images.length}</span>
+            </div>
           </div>
         </div>
       </div>
