@@ -341,6 +341,7 @@ export default function FreeCanvasGallery({
                         itemId={item.id}
                         isVisible={hoveredImageId === item.id}
                         onTagPerson={(id, name) => onToggleTag(id, name)}
+                        existingTags={(item as ImageItem).tags}
                       />
                     )}
                     {/* Tags + person tagging (hover only) */}

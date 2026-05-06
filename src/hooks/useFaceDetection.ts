@@ -78,7 +78,7 @@ export function useFaceDetection() {
     
     try {
       const detections = await faceapi
-        .detectAllFaces(imgElement, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.6 }))
+        .detectAllFaces(imgElement, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.45 }))
         .withFaceLandmarks(true)
         .withFaceDescriptors();
 
