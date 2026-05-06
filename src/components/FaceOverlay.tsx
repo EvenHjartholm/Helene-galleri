@@ -30,12 +30,14 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
     return availableTags.filter(t => t.toLowerCase().includes(q) && !tags.includes(t)).slice(0, 5);
   }, [nameInput, availableTags, tags]);
 
-  // Detect objects when hovered
+  // Detect objects when hovered — ONLY if image has no tags yet
   useEffect(() => {
     if (!isVisible || !imageElement) {
       if (!isVisible) abort();
       return;
     }
+    // Already tagged? Don't scan.
+    if (tags.length > 0) return;
 
     const imgSrc = imageElement.src;
     if (detectedForRef.current === imgSrc) return;
@@ -46,7 +48,7 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
       setTagged(new Set());
       setActiveObj(null);
     });
-  }, [isVisible, imageElement, detect, abort]);
+  }, [isVisible, imageElement, detect, abort, tags.length]);
 
   const handleTag = useCallback((name: string, obj: DetectedObject) => {
     onTagPerson(itemId, name);
@@ -61,11 +63,11 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
 
   if (!isVisible) return null;
 
-  const visibleObjects = objects.filter(o => !tagged.has(o.id));
+  const visibleObjects = tags.length === 0 ? objects.filter(o => !tagged.has(o.id)) : [];
 
   return (
     <div className="absolute inset-0 z-30 pointer-events-none overflow-visible rounded-xl">
-      {/* Detection boxes for untagged objects */}
+      {/* Detection boxes — only for untagged images */}
       {visibleObjects.map(obj => {
         const isPerson = obj.label === 'person';
         const recognized = isPerson && obj.matchedName;
