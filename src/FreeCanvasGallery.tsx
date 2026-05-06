@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, Download, GripHorizontal, Trash2, Maximize2, AlignLeft, AlignCenter, AlignRight, ImageIcon, Type } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Download, GripHorizontal, Trash2, Maximize2, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getTinyUrl } from './hooks/useGallerySync';
-import type { Page, GalleryItem, ImageItem, TextItem, TextSize } from './types';
+import type { GalleryItem, ImageItem, TextSize } from './types';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

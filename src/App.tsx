@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, Download, Lock, Plus, Trash2, Save, AlignLeft, AlignCenter, AlignRight, Image as ImageIcon, Type, LogOut, GripHorizontal, FilePlus, ArrowLeft, ArrowRight, Settings, Maximize2, Eye, EyeOff } from 'lucide-react';
+import { X, Lock, Plus, Trash2, Save, Image as ImageIcon, Type, LogOut, FilePlus, ArrowLeft, ArrowRight, Settings, Eye, EyeOff } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { supabase } from './lib/supabase';
-import { useGallerySync, getTinyUrl } from './hooks/useGallerySync';
-import type { Page, GalleryItem, ImageItem, TextItem, TextSize } from './types';
+import { useGallerySync } from './hooks/useGallerySync';
+import type { Page, GalleryItem, ImageItem, TextItem } from './types';
 import FreeCanvasGallery, { autoLayoutItems } from './FreeCanvasGallery';
 
 
@@ -60,13 +60,7 @@ const DEFAULT_ITEMS: GalleryItem[] = [
   },
 ];
 
-// --- Styles Helpers ---
-
-const SIZE_CLASSES: Record<TextSize, string> = {
-  sm: "text-xs md:text-sm text-gray-500 font-normal",
-  md: "text-base md:text-lg text-gray-800 font-medium",
-  lg: "text-xl md:text-3xl text-gray-900 font-serif italic"
-};
+// SIZE_CLASSES, SizeControl, EditableText moved to FreeCanvasGallery.tsx
 
 // autoLayoutItems is imported from FreeCanvasGallery
 
@@ -525,124 +519,7 @@ function ConflictModal({
 
 // --- CMS Components ---
 
-function SizeControl({ 
-  current, 
-  onChange,
-  label
-}: { 
-  current?: TextSize, 
-  onChange: (s: TextSize) => void,
-  label?: string
-}) {
-  return (
-    <div className="flex items-center gap-1 bg-gray-50 rounded p-0.5 border border-gray-200">
-      {label && <span className="text-[10px] uppercase font-bold text-gray-400 px-1">{label}</span>}
-      {(['sm', 'md', 'lg'] as const).map(size => (
-        <button
-          key={size}
-          onClick={(e) => { e.stopPropagation(); onChange(size); }}
-          className={cn(
-            "w-5 h-5 flex items-center justify-center rounded text-[10px] font-bold transition-colors uppercase",
-            (current || 'md') === size ? "bg-white shadow text-blue-600" : "text-gray-400 hover:text-gray-600 hover:bg-gray-200/50"
-          )}
-        >
-          {size.charAt(0)}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// SpanControl removed — replaced by free-form canvas positioning
-
-function EditableText({ 
-  text, 
-  onSave, 
-  isAdmin, 
-  className,
-  multiline = false,
-  placeholder = "Klikk for å redigere...",
-  // baseSize removed as unused
-}: { 
-  text: string, 
-  onSave: (val: string) => void, 
-  isAdmin: boolean,
-  className?: string,
-  multiline?: boolean,
-  placeholder?: string,
-  baseSize?: TextSize
-}) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [value, setValue] = useState(text);
-  const inputRef = useRef<HTMLTextAreaElement | HTMLInputElement>(null);
-
-  useEffect(() => {
-    setValue(text);
-  }, [text]);
-
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isEditing]);
-
-  const handleSave = () => {
-    onSave(value);
-    setIsEditing(false);
-  };
-
-  if (isEditing && isAdmin) {
-     const commonInputClasses = cn(
-       "w-full bg-white/80 border border-blue-300 rounded p-1 outline-none focus:ring-2 ring-blue-100 placeholder:text-gray-300",
-       className
-     );
-     
-    if (multiline) {
-      return (
-        <textarea
-          ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onBlur={handleSave}
-          className={commonInputClasses}
-          rows={Math.max(2, value.split('\n').length)}
-        />
-      );
-    }
-    return (
-      <input
-        ref={inputRef as React.RefObject<HTMLInputElement>}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={handleSave}
-        onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-        className={commonInputClasses}
-        placeholder={placeholder}
-      />
-    );
-  }
-
-  if (!text && !isAdmin) return null;
-
-  return (
-    <div 
-      onClick={(e) => {
-        if(isAdmin) {
-          e.stopPropagation();
-          setIsEditing(true);
-        }
-      }}
-      className={cn(
-        "relative transition-all rounded py-0.5 border border-transparent",
-        isAdmin && "cursor-text hover:bg-blue-50/50 hover:border-blue-200/50 group-admin min-h-[1.5em] min-w-[50px]",
-        !text && isAdmin && "bg-gray-50/50",
-        className
-      )}
-    >
-      {text || (isAdmin ? <span className="text-gray-300 italic text-sm select-none">{placeholder}</span> : null)}
-    </div>
-  );
-}
+// SizeControl, EditableText — now in FreeCanvasGallery.tsx
 
 // --- Free Canvas Item (replaced SortableGalleryItem) ---
 // Items are no longer sortable - they use absolute positioning with free drag.
@@ -816,11 +693,9 @@ function GalleryView({
   onUpdateItem,
   onAddItem,
   onDeleteItem,
-  onReorder,
   onChangePage,
   onAddPage,
   onDeletePage,
-
   onOpenSettings
 }: { 
   isAdmin: boolean; 
@@ -830,13 +705,10 @@ function GalleryView({
   onUpdateItem: (id: string, updates: Partial<GalleryItem>) => void;
   onAddItem: (type: 'image' | 'text', payload?: any) => void;
   onDeleteItem: (id: string) => void;
-  onReorder: (activeId: string, overId: string) => void;
   onChangePage: (index: number) => void;
   onAddPage: () => void;
   onDeletePage: () => void;
-
   onOpenSettings: () => void;
-
 }) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [showIntros, setShowIntros] = useState(true);
@@ -1160,13 +1032,7 @@ export default function App() {
     updateCurrentPageItems(prev => prev.filter(i => i.id !== id));
   };
 
-  const handleReorder = (activeId: string, overId: string) => {
-    updateCurrentPageItems(items => {
-      const oldIndex = items.findIndex((item) => item.id === activeId);
-      const newIndex = items.findIndex((item) => item.id === overId);
-      return arrayMove(items, oldIndex, newIndex);
-    });
-  };
+  // handleReorder removed — free canvas uses x/y positioning instead
 
   // Page Management
   const handleAddPage = () => {
@@ -1289,7 +1155,6 @@ export default function App() {
               onUpdateItem={handleUpdateItem}
               onAddItem={handleAddItem}
               onDeleteItem={handleDeleteItem}
-              onReorder={handleReorder}
               onChangePage={setCurrentPageIndex}
               onAddPage={handleAddPage}
               onDeletePage={handleDeletePage}
