@@ -1,29 +1,12 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, Download, Lock, Plus, Trash2, Save, AlignLeft, AlignCenter, AlignRight, Image as ImageIcon, Type, LogOut, GripHorizontal, FilePlus, ArrowLeft, ArrowRight, Settings } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Download, Lock, Plus, Trash2, Save, AlignLeft, AlignCenter, AlignRight, Image as ImageIcon, Type, LogOut, GripHorizontal, FilePlus, ArrowLeft, ArrowRight, Settings, Maximize2, Eye, EyeOff } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { supabase } from './lib/supabase';
 import { useGallerySync, getTinyUrl } from './hooks/useGallerySync';
 import type { Page, GalleryItem, ImageItem, TextItem, TextSize } from './types';
-import { 
-  DndContext, 
-  closestCorners,
-  DragOverlay,
-  useSensor, 
-  useSensors, 
-  PointerSensor, 
-  KeyboardSensor
-} from '@dnd-kit/core';
-import type { DragStartEvent, DragEndEvent } from '@dnd-kit/core';
-import { 
-  arrayMove, 
-  SortableContext, 
-  sortableKeyboardCoordinates, 
-  rectSortingStrategy, 
-  useSortable
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import FreeCanvasGallery, { autoLayoutItems } from './FreeCanvasGallery';
 
 
 // Utility for Tailwind classes
@@ -84,6 +67,8 @@ const SIZE_CLASSES: Record<TextSize, string> = {
   md: "text-base md:text-lg text-gray-800 font-medium",
   lg: "text-xl md:text-3xl text-gray-900 font-serif italic"
 };
+
+// autoLayoutItems is imported from FreeCanvasGallery
 
 // --- Helpers ---
 
@@ -568,6 +553,8 @@ function SizeControl({
   );
 }
 
+// SpanControl removed — replaced by free-form canvas positioning
+
 function EditableText({ 
   text, 
   onSave, 
@@ -657,62 +644,8 @@ function EditableText({
   );
 }
 
-// --- Sortable Wrapper ---
-function SortableGalleryItem({ 
-  item, 
-  isAdmin, 
-  children,
-  className 
-}: { 
-  item: GalleryItem; 
-  isAdmin: boolean; 
-  children: React.ReactNode; 
-  className?: string;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging
-  } = useSortable({ id: item.id, disabled: !isAdmin });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0 : 1, 
-    zIndex: isDragging ? 50 : 1,
-  };
-
-  const animationProps = isDragging ? {} : {
-    initial: { opacity: 0, y: 50, scale: 0.9 },
-    whileInView: { opacity: 1, y: 0, scale: 1 },
-    viewport: { once: true, margin: "-10%" as const },
-    transition: { duration: 0.7, ease: "easeOut" as const }
-  };
-
-  return (
-    <div 
-      ref={setNodeRef} 
-      style={style} 
-      className={cn("relative break-inside-avoid mb-6 md:mb-8", className)}
-    >
-      <motion.div {...animationProps} className="h-full">
-        {isAdmin && (
-           <div 
-            {...attributes} 
-            {...listeners} 
-            className="absolute top-2 left-2 z-30 p-2 bg-white/90 rounded shadow hover:bg-white cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-             <GripHorizontal size={14} className="text-gray-400" />
-           </div>
-        )}
-        {children}
-      </motion.div>
-    </div>
-  );
-}
+// --- Free Canvas Item (replaced SortableGalleryItem) ---
+// Items are no longer sortable - they use absolute positioning with free drag.
 
 // --- Views ---
 
@@ -907,36 +840,21 @@ function GalleryView({
 }) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [showIntros, setShowIntros] = useState(true);
-  const [activeId, setActiveId] = useState<string | null>(null);
   const [showAddImageModal, setShowAddImageModal] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [pageToDelete, setPageToDelete] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
 
+  // When preview is on, hide all admin UI
+  const effectiveAdmin = isAdmin && !previewMode;
 
-  
   const currentPage = pages[currentPageIndex];
   const items = currentPage?.items || [];
   const imageItems = items.filter((item): item is ImageItem => item.type === 'image');
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
 
   const openLightbox = (imageItem: ImageItem) => {
     const index = imageItems.findIndex(i => i.id === imageItem.id);
     if(index !== -1) setLightboxIndex(index);
   };
-  
-  const closeLightbox = () => setLightboxIndex(null);
-
-  const nextImage = useCallback(() => {
-    setLightboxIndex(prev => prev === null ? null : (prev + 1) % imageItems.length);
-  }, [imageItems.length]);
-  
-  const prevImage = useCallback(() => {
-    setLightboxIndex(prev => prev === null ? null : (prev - 1 + imageItems.length) % imageItems.length);
-  }, [imageItems.length]);
 
   // Guard clause moved AFTER hooks to satisfy Rules of Hooks
   if (!currentPage) {
@@ -948,20 +866,6 @@ function GalleryView({
     );
   }
 
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      onReorder(active.id as string, over.id as string);
-    }
-    setActiveId(null);
-  };
-
-  const activeItem = activeId ? items.find(i => i.id === activeId) : null;
-
   return (
     <div className="min-h-screen bg-offwhite pb-24 relative">
       <NoiseTexture />
@@ -970,10 +874,20 @@ function GalleryView({
         <div className="max-w-[1600px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
              <h1 className="font-serif text-xl text-gray-900 tracking-tight font-medium">Helene sin bildegalleri</h1>
-             {isAdmin && <span className="bg-blue-100 text-blue-800 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full tracking-wider">Admin</span>}
+             {isAdmin && !previewMode && <span className="bg-blue-100 text-blue-800 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full tracking-wider">Admin</span>}
+             {previewMode && <span className="bg-purple-100 text-purple-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full tracking-wider animate-pulse">Forhåndsvisning</span>}
           </div>
           <div className="flex items-center gap-4">
              {isAdmin && (
+               <button
+                 onClick={() => setPreviewMode(!previewMode)}
+                 className={cn("p-2 rounded-lg transition-all", previewMode ? "bg-purple-100 text-purple-700 hover:bg-purple-200" : "text-gray-400 hover:text-gray-900")}
+                 title={previewMode ? "Tilbake til admin" : "Se som Helene"}
+               >
+                 {previewMode ? <EyeOff size={18} /> : <Eye size={18} />}
+               </button>
+             )}
+             {isAdmin && !previewMode && (
                <button onClick={onOpenSettings} className="p-2 text-gray-400 hover:text-gray-900 transition-colors" title="Innstillinger">
                  <Settings size={18} />
                </button>
@@ -991,126 +905,23 @@ function GalleryView({
           {showIntros && (
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0, marginBottom: 0 }} className="mb-8 flex items-start justify-between bg-white/50 p-4 rounded-lg border border-gray-100">
               <div className="text-sm text-gray-600 max-w-prose">
-                {isAdmin ? "Admin: Du jobber nå på Side " + (currentPageIndex + 1) + ". Legg til bilder, eller opprett ny side nederst." : "Her er bildene dine."}
+                {effectiveAdmin ? "Admin: Du jobber nå på Side " + (currentPageIndex + 1) + ". Legg til bilder, eller opprett ny side nederst." : "Her er bildene dine."}
               </div>
               <button onClick={() => setShowIntros(false)} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <SortableContext items={items} strategy={rectSortingStrategy}>
-            <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 md:gap-8 space-y-6 md:space-y-8 min-h-[50vh]">
-              {items.map((item) => (
-                 <SortableGalleryItem key={item.id} item={item} isAdmin={isAdmin} className="group">
-                    {item.type === 'text' ? (
-                       <div className="p-6 md:p-8 flex items-center justify-center flex-col relative bg-transparent">
-                          <div className={cn("w-full", item.align === 'left' ? "text-left" : item.align === 'right' ? "text-right" : "text-center", isAdmin && "border border-dashed border-gray-200/50 hover:border-gray-300 rounded-lg transition-colors p-2")}>
-                             <EditableText text={item.content} isAdmin={isAdmin} multiline baseSize={item.size} className={SIZE_CLASSES[item.size || 'md']} onSave={(val) => onUpdateItem(item.id, { content: val })} />
-                          </div>
-                          {isAdmin && (
-                            <div className="absolute -top-3 right-0 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white shadow-sm border border-gray-100 rounded-lg p-1.5 z-40 font-sans pointer-events-auto" onPointerDown={(e) => e.stopPropagation()}>
-                              <div className="flex gap-0.5 border-r border-gray-200 pr-2 mr-1">
-                                <button onClick={() => onUpdateItem(item.id, { align: 'left' })} className={cn("p-1 rounded hover:bg-gray-100", item.align === 'left' && "text-blue-500")}><AlignLeft size={14} /></button>
-                                <button onClick={() => onUpdateItem(item.id, { align: 'center' })} className={cn("p-1 rounded hover:bg-gray-100", (!item.align || item.align === 'center') && "text-blue-500")}><AlignCenter size={14} /></button>
-                                <button onClick={() => onUpdateItem(item.id, { align: 'right' })} className={cn("p-1 rounded hover:bg-gray-100", item.align === 'right' && "text-blue-500")}><AlignRight size={14} /></button>
-                              </div>
-                              <SizeControl current={item.size} onChange={(s) => onUpdateItem(item.id, { size: s })} />
-                              <div className="w-[1px] bg-gray-200 mx-1" />
-                              <button onClick={() => setItemToDelete(item.id)} className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"><Trash2 size={14} /></button>
-                            </div>
-                          )}
-                       </div>
-                    ) : (
-                        <div className="relative isolate" onClick={() => !isAdmin && openLightbox(item as ImageItem)}>
-                          <div className={cn("relative overflow-hidden rounded-t-xl bg-gray-200 shadow-sm transition-shadow", !isAdmin && "group-hover:shadow-xl cursor-zoom-in", (item.title || item.caption || isAdmin) ? "rounded-b-none" : "rounded-b-xl")}>
-                            
-                            {/* 🌫️ BLUR-UP PLACEHOLDER (Instant, Progressive) */}
-                            {/* Uses <img> instead of background-image for priority control and error handling */}
-                            <img 
-                              src={getTinyUrl(item.originalUrl)}
-                              alt=""
-                              fetchPriority="high"
-                              decoding="async"
-                              className="absolute inset-0 w-full h-full object-cover blur-xl scale-110 opacity-100 transition-opacity duration-700"
-                              style={{ willChange: 'opacity' }}
-                              onError={(e) => {
-                                // If render API fails for tiny thumb, try original (better slow than nothing)
-                                const target = e.currentTarget;
-                                if (target.src !== item.originalUrl) {
-                                  target.src = item.originalUrl;
-                                }
-                              }}
-                            />
-
-                            {/* 🖼️ MAIN IMAGE (Fades in) */}
-                            <img 
-                              src={item.thumbnailUrl} 
-                              alt={item.altText || ""} 
-                              loading="eager" 
-                              decoding="async"
-                              fetchPriority={items.indexOf(item) < 8 ? "high" : "auto"}
-                              className="w-full h-auto object-cover min-h-[50px] relative z-10 opacity-0 transition-opacity duration-500 ease-out"
-                              onLoad={(e) => {
-                                e.currentTarget.classList.remove('opacity-0');
-                              }}
-                              onError={(e) => {
-                               console.warn("Retrying with original URL:", item.originalUrl);
-                               // 🛡️ FALLBACK: If thumbnail (render API) fails, force load original file.
-                               // This makes the gallery "bulletproof" against render errors.
-                               const target = e.currentTarget;
-                               if (target.src !== item.originalUrl) {
-                                   target.src = item.originalUrl;
-                                   target.classList.remove('opacity-0'); // Ensure it shows even if fade logic glitched
-                               }
-                              }} 
-                            />
-                            
-                            {!isAdmin && <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 z-20" />}
-                          </div>
-                         {(item.title || item.caption || isAdmin) && (
-                            <div className={cn("bg-white/40 backdrop-blur-sm -mt-2 pt-4 pb-4 px-4 rounded-b-xl border-x border-b border-white/50 relative", isAdmin && "bg-white/80 border-gray-200/50")}>
-                              <div className="mb-2 text-center">
-                                <EditableText text={item.title || ""} isAdmin={isAdmin} placeholder="Legg til tittel..." className={cn("block w-full text-center", SIZE_CLASSES[item.titleSize || 'lg'])} onSave={(val) => onUpdateItem(item.id, { title: val })} />
-                              </div>
-                              <div className="text-center">
-                                <EditableText text={item.caption || ""} isAdmin={isAdmin} multiline placeholder="Legg til beskrivelse..." className={cn("block w-full text-center leading-relaxed", SIZE_CLASSES[item.captionSize || 'sm'])} onSave={(val) => onUpdateItem(item.id, { caption: val })} />
-                              </div>
-                              {isAdmin && (
-                                <div className="absolute -top-10 right-0 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white shadow-sm border border-gray-100 rounded-lg p-1.5 z-40 pointer-events-auto" onPointerDown={(e) => e.stopPropagation()}>
-                                   <div className="flex flex-col gap-1">
-                                      <SizeControl label="Tittel" current={item.titleSize || 'lg'} onChange={(s) => onUpdateItem(item.id, { titleSize: s })} />
-                                      <SizeControl label="Tekst" current={item.captionSize || 'sm'} onChange={(s) => onUpdateItem(item.id, { captionSize: s })} />
-                                   </div>
-                                   <div className="w-[1px] bg-gray-200 mx-1" />
-                                   <button onClick={() => setItemToDelete(item.id)} className="p-1 text-red-500 hover:bg-red-50 rounded self-center"><Trash2 size={16} /></button>
-                                </div>
-                              )}
-                            </div>
-                         )}
-                       </div>
-                    )}
-                 </SortableGalleryItem>
-              ))}
-            </div>
-
-            <DragOverlay>
-              {activeItem ? (
-                 <div className="opacity-90 scale-105 shadow-2xl rounded-xl bg-white p-2 w-[300px]">
-                   {activeItem.type === 'text' ? (
-                      <div className={cn("p-6 bg-white rounded border border-gray-100 text-center", SIZE_CLASSES[activeItem.size || 'md'])}>
-                        "{activeItem.content}"
-                      </div>
-                   ) : (
-                      <div>
-                        <img src={(activeItem as ImageItem).thumbnailUrl} className="w-full h-auto rounded-t-lg" alt="" />
-                      </div>
-                   )}
-                 </div>
-              ) : null}
-            </DragOverlay>
-          </SortableContext>
-        </DndContext>
+        <FreeCanvasGallery
+          isAdmin={effectiveAdmin}
+          items={items}
+          imageItems={imageItems}
+          onUpdateItem={onUpdateItem}
+          onDeleteItem={onDeleteItem}
+          lightboxIndex={lightboxIndex}
+          setLightboxIndex={setLightboxIndex}
+          openLightbox={openLightbox}
+        />
       </main>
 
       <PaginationFooter 
@@ -1118,13 +929,13 @@ function GalleryView({
         totalPages={pages.length}
         onNext={() => onChangePage(currentPageIndex + 1)}
         onPrev={() => onChangePage(currentPageIndex - 1)}
-        isAdmin={isAdmin}
+        isAdmin={effectiveAdmin}
         onAddPage={onAddPage}
         onDeletePage={() => setPageToDelete(true)}
       />
 
       <AnimatePresence>
-        {isAdmin && (
+        {effectiveAdmin && (
           <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
              <div className="bg-white/90 backdrop-blur-md shadow-lg border border-gray-200/50 rounded-full px-6 py-3 flex items-center gap-4">
                  <button onClick={() => setShowAddImageModal(true)} className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
@@ -1147,44 +958,14 @@ function GalleryView({
       </AnimatePresence>
 
       <AnimatePresence>
-        {itemToDelete && <ConfirmModal title="Slett element?" message="Er du sikker på at du vil slette dette? Dette kan ikke angres." onConfirm={() => { if (itemToDelete) onDeleteItem(itemToDelete); setItemToDelete(null); }} onCancel={() => setItemToDelete(null)} />}
-      </AnimatePresence>
-
-      <AnimatePresence>
         {pageToDelete && <ConfirmModal title="Slett side?" message="Hvis du sletter denne siden, forsvinner også alle bildene på den. Er du sikker?" onConfirm={() => { onDeletePage(); setPageToDelete(false); }} onCancel={() => setPageToDelete(false)} />}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {lightboxIndex !== null && <Lightbox images={imageItems} currentIndex={lightboxIndex} onClose={closeLightbox} onNext={nextImage} onPrev={prevImage} />}
       </AnimatePresence>
     </div>
   );
 }
 
-// ... Lightbox component (same as previous) ...
-function Lightbox({ images, currentIndex, onClose, onNext, onPrev }: { images: ImageItem[], currentIndex: number, onClose: () => void, onNext: () => void, onPrev: () => void }) {
-  const currentImage = images[currentIndex];
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B0B0B]/90 backdrop-blur-sm" onClick={onClose}>
-      <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-4 right-4 md:top-6 md:right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all z-50"><X size={24} /></button>
-      <button onClick={(e) => { e.stopPropagation(); onPrev(); }} className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-4 rounded-full hover:bg-white/10 transition-all z-40 hidden md:block"><ChevronLeft size={40} strokeWidth={1} /></button>
-      <button onClick={(e) => { e.stopPropagation(); onNext(); }} className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-4 rounded-full hover:bg-white/10 transition-all z-40 hidden md:block"><ChevronRight size={40} strokeWidth={1} /></button>
-      <div className="w-full h-full flex flex-col items-center justify-center p-4 md:p-12 pb-24 relative" onClick={(e) => e.stopPropagation()}>
-        <motion.div key={currentImage.id} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3, ease: "easeOut" }} className="relative max-h-full max-w-full flex justify-center shadow-2xl">
-          <img src={currentImage.largeUrl} alt={currentImage.altText} className="max-h-[80vh] md:max-h-[85vh] w-auto object-contain rounded-sm select-none" />
-        </motion.div>
-        <div className="absolute bottom-6 left-0 right-0 text-center pointer-events-none">
-          <div className="inline-flex flex-col items-center pointer-events-auto bg-black/40 backdrop-blur-md px-6 py-3 rounded-full border border-white/10">
-            {currentImage.title && <h3 className="text-white text-lg font-serif italic mb-1">{currentImage.title}</h3>}
-            {currentImage.caption && <p className="text-white/80 text-sm font-medium mb-3 max-w-md text-center">{currentImage.caption}</p>}
-            <a href={currentImage.originalUrl} download target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-white/60 hover:text-white transition-colors"><Download size={14} /> Last ned original</a>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
 
+// Lightbox is now in FreeCanvasGallery.tsx
 // --- Main App ---
 
 export default function App() {
@@ -1238,8 +1019,10 @@ export default function App() {
         // AUTO-RESOLVE: Always prefer cloud data (Admin request)
         console.log("Loading from cloud (forcing cloud-first).");
         if (Array.isArray(cloudPages)) {
-            setPages(cloudPages);
-            lastSyncedPagesRef.current = JSON.stringify(cloudPages);
+            // Auto-layout: assign positions to items that don't have x/y/w
+            const layoutedPages = cloudPages.map(p => ({ ...p, items: autoLayoutItems(p.items) }));
+            setPages(layoutedPages);
+            lastSyncedPagesRef.current = JSON.stringify(layoutedPages);
             
             try {
                 console.log("Running Auto-Repair on fetch...");

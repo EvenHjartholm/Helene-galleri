@@ -6,6 +6,6 @@ export default defineConfig({
   plugins: [react()],
   base: '/', // ✅ Tilbake til rot for eget domene (www.helenesvelle.no)
   server: {
-    port: 8000,
+    port: 1000,
   }
 })

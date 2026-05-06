@@ -4,6 +4,11 @@ export type TextSize = 'sm' | 'md' | 'lg';
 export interface BaseItem {
   id: string;
   type: 'image' | 'text';
+
+  // Free-form canvas positioning
+  x?: number; // % from left (0-100)
+  y?: number; // px from top of canvas
+  w?: number; // % width of canvas (5-100)
 }
 
 export interface ImageItem extends BaseItem {
@@ -12,10 +17,10 @@ export interface ImageItem extends BaseItem {
   largeUrl: string;
   originalUrl: string;
   
-  // ✅ NEW: permanent reference to the exact file in Supabase
+  // permanent reference to the exact file in Supabase
   storageName?: string;
   
-  // ✅ NEW: Local file reference for upload
+  // Local file reference for upload
   file?: File;
   
   // Content
