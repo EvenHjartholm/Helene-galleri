@@ -50,3 +50,15 @@ export interface Page {
   id: string;
   items: GalleryItem[];
 }
+
+export interface Album {
+  id: string;
+  title: string;
+  emoji?: string;
+  description?: string;
+  coverImageId?: string;
+  date?: string;        // "2024-06" or "2024-06-15"
+  hidden?: boolean;     // hidden from guest view
+  sortOrder?: number;
+  items: GalleryItem[];
+}

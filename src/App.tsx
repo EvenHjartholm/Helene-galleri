@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Lock, Plus, Trash2, Save, Image as ImageIcon, Type, LogOut, FilePlus, ArrowLeft, ArrowRight, Settings, Eye, EyeOff } from 'lucide-react';
+import { X, Lock, Plus, Trash2, Save, Image as ImageIcon, Type, LogOut, FilePlus, ArrowLeft, ArrowRight, Settings, Eye, EyeOff, Home, FolderOpen } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { supabase } from './lib/supabase';
 import { useGallerySync } from './hooks/useGallerySync';
-import type { Page, GalleryItem, ImageItem, TextItem } from './types';
+import type { Page, GalleryItem, ImageItem, TextItem, Album } from './types';
 import FreeCanvasGallery, { autoLayoutItems } from './FreeCanvasGallery';
 
 
@@ -689,6 +689,7 @@ function GalleryView({
   isAdmin, 
   pages,
   currentPageIndex,
+  albums,
   onLogout,
   onUpdateItem,
   onAddItem,
@@ -696,11 +697,18 @@ function GalleryView({
   onChangePage,
   onAddPage,
   onDeletePage,
-  onOpenSettings
+  onOpenSettings,
+  onCreateAlbum,
+  onUpdateAlbum,
+  onDeleteAlbum,
+  onUpdateAlbumItem,
+  onAddAlbumItem,
+  onDeleteAlbumItem,
 }: { 
   isAdmin: boolean; 
   pages: Page[];
   currentPageIndex: number;
+  albums: Album[];
   onLogout: () => void;
   onUpdateItem: (id: string, updates: Partial<GalleryItem>) => void;
   onAddItem: (type: 'image' | 'text', payload?: any) => void;
@@ -709,12 +717,31 @@ function GalleryView({
   onAddPage: () => void;
   onDeletePage: () => void;
   onOpenSettings: () => void;
+  onCreateAlbum: (data: { title: string; emoji: string; description: string; date: string }) => void;
+  onUpdateAlbum: (id: string, updates: Partial<Album>) => void;
+  onDeleteAlbum: (id: string) => void;
+  onUpdateAlbumItem: (albumId: string, itemId: string, updates: Partial<GalleryItem>) => void;
+  onAddAlbumItem: (albumId: string, type: 'image' | 'text', payload?: any) => void;
+  onDeleteAlbumItem: (albumId: string, itemId: string) => void;
 }) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [showIntros, setShowIntros] = useState(true);
   const [showAddImageModal, setShowAddImageModal] = useState(false);
   const [pageToDelete, setPageToDelete] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
+  const [showCreateAlbum, setShowCreateAlbum] = useState(false);
+
+  // Album lightbox state
+  const [albumLightboxIndex, setAlbumLightboxIndex] = useState<number | null>(null);
+
+  const selectedAlbum = selectedAlbumId ? albums.find(a => a.id === selectedAlbumId) : null;
+  const albumImageItems = selectedAlbum ? selectedAlbum.items.filter((i): i is ImageItem => i.type === 'image') : [];
+  const openAlbumLightbox = (img: ImageItem) => {
+    const idx = albumImageItems.findIndex(i => i.id === img.id);
+    if (idx !== -1) setAlbumLightboxIndex(idx);
+  };
 
   // When preview is on, hide all admin UI
   const effectiveAdmin = isAdmin && !previewMode;
@@ -727,6 +754,8 @@ function GalleryView({
     const index = imageItems.findIndex(i => i.id === imageItem.id);
     if(index !== -1) setLightboxIndex(index);
   };
+
+  const visibleAlbums = isAdmin ? albums : albums.filter(a => !a.hidden);
 
   // Guard clause moved AFTER hooks to satisfy Rules of Hooks
   if (!currentPage) {
@@ -742,27 +771,118 @@ function GalleryView({
     <div className="min-h-screen bg-offwhite pb-24 relative">
       <NoiseTexture />
       
+      {/* ===== SIDEBAR OVERLAY ===== */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50" onClick={() => setSidebarOpen(false)} />
+            <motion.aside
+              initial={{ x: -320 }} animate={{ x: 0 }} exit={{ x: -320 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="fixed top-0 left-0 bottom-0 w-[300px] bg-white shadow-2xl z-50 flex flex-col"
+            >
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                <h2 className="font-serif text-lg text-gray-900 font-medium">Samlinger</h2>
+                <button onClick={() => setSidebarOpen(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-700"><X size={18} /></button>
+              </div>
+              <button onClick={() => { setSelectedAlbumId(null); setSidebarOpen(false); }}
+                className={cn("flex items-center gap-3 px-5 py-3.5 text-sm font-medium transition-all border-b border-gray-50",
+                  !selectedAlbumId ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+                )}>
+                <Home size={18} /><span>Forside</span>
+                {!selectedAlbumId && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500" />}
+              </button>
+              <div className="flex-1 overflow-y-auto">
+                {visibleAlbums.length === 0 && (
+                  <div className="px-5 py-8 text-center text-gray-300 text-sm">
+                    <FolderOpen size={32} className="mx-auto mb-2 opacity-40" /><p>Ingen samlinger ennå</p>
+                  </div>
+                )}
+                {visibleAlbums.map(album => {
+                  const imgCount = album.items.filter(i => i.type === 'image').length;
+                  const isActive = selectedAlbumId === album.id;
+                  const coverImg = album.items.find((i): i is ImageItem => i.type === 'image');
+                  return (
+                    <button key={album.id} onClick={() => { setSelectedAlbumId(album.id); setSidebarOpen(false); }}
+                      className={cn("w-full flex items-center gap-3 px-5 py-3 text-left transition-all group relative",
+                        isActive ? "bg-gray-100" : "hover:bg-gray-50", album.hidden && "opacity-50"
+                      )}>
+                      {coverImg ? (
+                        <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                          <img src={coverImg.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 text-lg">{album.emoji || '📁'}</div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-medium text-gray-800 truncate">{album.title}</span>
+                          {album.hidden && <EyeOff size={10} className="text-gray-400 flex-shrink-0" />}
+                        </div>
+                        <span className="text-xs text-gray-400">{imgCount} {imgCount === 1 ? 'bilde' : 'bilder'}</span>
+                      </div>
+                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />}
+                      {effectiveAdmin && (
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1"
+                          onClick={e => e.stopPropagation()}>
+                          <button onClick={() => onUpdateAlbum(album.id, { hidden: !album.hidden })}
+                            className="p-1 rounded hover:bg-gray-200 text-gray-400" title={album.hidden ? 'Vis' : 'Skjul'}>
+                            {album.hidden ? <Eye size={12} /> : <EyeOff size={12} />}
+                          </button>
+                          <button onClick={() => { if (confirm(`Slett "${album.title}"?`)) onDeleteAlbum(album.id); }}
+                            className="p-1 rounded hover:bg-red-100 text-red-400"><Trash2 size={12} /></button>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              {effectiveAdmin && (
+                <div className="border-t border-gray-100 p-3">
+                  <button onClick={() => { setShowCreateAlbum(true); setSidebarOpen(false); }}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all">
+                    <Plus size={16} /> Ny samling
+                  </button>
+                </div>
+              )}
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ===== NAV BAR ===== */}
       <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100/50">
         <div className="max-w-[1600px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-             <h1 className="font-serif text-xl text-gray-900 tracking-tight font-medium">Helene sin bildegalleri</h1>
+             <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-1 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all" title="Åpne samlinger">
+               <FolderOpen size={20} />
+             </button>
+             <div className="w-px h-6 bg-gray-200" />
+             <h1 className="font-serif text-xl text-gray-900 tracking-tight font-medium">
+               {selectedAlbum ? (
+                 <span className="flex items-center gap-2">{selectedAlbum.emoji && <span>{selectedAlbum.emoji}</span>}{selectedAlbum.title}</span>
+               ) : 'Helene sin bildegalleri'}
+             </h1>
              {isAdmin && !previewMode && <span className="bg-blue-100 text-blue-800 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full tracking-wider">Admin</span>}
              {previewMode && <span className="bg-purple-100 text-purple-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full tracking-wider animate-pulse">Forhåndsvisning</span>}
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+             {selectedAlbumId && (
+               <button onClick={() => setSelectedAlbumId(null)}
+                 className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition-all">
+                 <ArrowLeft size={12} /> Forside
+               </button>
+             )}
              {isAdmin && (
-               <button
-                 onClick={() => setPreviewMode(!previewMode)}
+               <button onClick={() => setPreviewMode(!previewMode)}
                  className={cn("p-2 rounded-lg transition-all", previewMode ? "bg-purple-100 text-purple-700 hover:bg-purple-200" : "text-gray-400 hover:text-gray-900")}
-                 title={previewMode ? "Tilbake til admin" : "Se som Helene"}
-               >
+                 title={previewMode ? "Tilbake til admin" : "Se som Helene"}>
                  {previewMode ? <EyeOff size={18} /> : <Eye size={18} />}
                </button>
              )}
              {isAdmin && !previewMode && (
-               <button onClick={onOpenSettings} className="p-2 text-gray-400 hover:text-gray-900 transition-colors" title="Innstillinger">
-                 <Settings size={18} />
-               </button>
+               <button onClick={onOpenSettings} className="p-2 text-gray-400 hover:text-gray-900 transition-colors" title="Innstillinger"><Settings size={18} /></button>
              )}
              <div className="w-px h-6 bg-gray-200" />
              <button onClick={onLogout} className="flex items-center gap-2 text-xs uppercase tracking-wider font-medium text-gray-500 hover:text-gray-900 transition-colors">
@@ -772,67 +892,121 @@ function GalleryView({
         </div>
       </nav>
 
+      {/* ===== MAIN CONTENT ===== */}
       <main className="max-w-[1600px] mx-auto px-4 md:px-8 pt-8 md:pt-12 relative z-10">
-        <AnimatePresence>
-          {showIntros && (
-            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0, marginBottom: 0 }} className="mb-8 flex items-start justify-between bg-white/50 p-4 rounded-lg border border-gray-100">
-              <div className="text-sm text-gray-600 max-w-prose">
-                {effectiveAdmin ? "Admin: Du jobber nå på Side " + (currentPageIndex + 1) + ". Legg til bilder, eller opprett ny side nederst." : "Her er bildene dine."}
-              </div>
-              <button onClick={() => setShowIntros(false)} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <FreeCanvasGallery
-          isAdmin={effectiveAdmin}
-          items={items}
-          imageItems={imageItems}
-          onUpdateItem={onUpdateItem}
-          onDeleteItem={onDeleteItem}
-          lightboxIndex={lightboxIndex}
-          setLightboxIndex={setLightboxIndex}
-          openLightbox={openLightbox}
-        />
+        {!selectedAlbumId && (
+          <>
+            <AnimatePresence>
+              {showIntros && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0, marginBottom: 0 }} className="mb-8 flex items-start justify-between bg-white/50 p-4 rounded-lg border border-gray-100">
+                  <div className="text-sm text-gray-600 max-w-prose">
+                    {effectiveAdmin ? "Forside: Plasser bilder fritt. Åpne 📁 for samlinger." : "Velkommen til bildegalleriet!"}
+                  </div>
+                  <button onClick={() => setShowIntros(false)} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <FreeCanvasGallery isAdmin={effectiveAdmin} items={items} imageItems={imageItems} onUpdateItem={onUpdateItem} onDeleteItem={onDeleteItem} lightboxIndex={lightboxIndex} setLightboxIndex={setLightboxIndex} openLightbox={openLightbox} />
+            <PaginationFooter currentPageIndex={currentPageIndex} totalPages={pages.length} onNext={() => onChangePage(currentPageIndex + 1)} onPrev={() => onChangePage(currentPageIndex - 1)} isAdmin={effectiveAdmin} onAddPage={onAddPage} onDeletePage={() => setPageToDelete(true)} />
+          </>
+        )}
+        {selectedAlbumId && selectedAlbum && (
+          <FreeCanvasGallery isAdmin={effectiveAdmin} items={selectedAlbum.items} imageItems={albumImageItems}
+            onUpdateItem={(itemId, updates) => onUpdateAlbumItem(selectedAlbumId, itemId, updates)}
+            onDeleteItem={(itemId) => onDeleteAlbumItem(selectedAlbumId, itemId)}
+            lightboxIndex={albumLightboxIndex} setLightboxIndex={setAlbumLightboxIndex} openLightbox={openAlbumLightbox} />
+        )}
       </main>
 
-      <PaginationFooter 
-        currentPageIndex={currentPageIndex}
-        totalPages={pages.length}
-        onNext={() => onChangePage(currentPageIndex + 1)}
-        onPrev={() => onChangePage(currentPageIndex - 1)}
-        isAdmin={effectiveAdmin}
-        onAddPage={onAddPage}
-        onDeletePage={() => setPageToDelete(true)}
-      />
-
+      {/* Floating toolbar */}
       <AnimatePresence>
         {effectiveAdmin && (
           <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
              <div className="bg-white/90 backdrop-blur-md shadow-lg border border-gray-200/50 rounded-full px-6 py-3 flex items-center gap-4">
                  <button onClick={() => setShowAddImageModal(true)} className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
-                   <div className="bg-gray-100 p-1.5 rounded-full"><ImageIcon size={16} /></div>
-                   Nytt bilde
+                   <div className="bg-gray-100 p-1.5 rounded-full"><ImageIcon size={16} /></div> Nytt bilde
                  </button>
                  <div className="w-[1px] h-6 bg-gray-200" />
-                 <button onClick={() => onAddItem('text')} className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
-                   <div className="bg-gray-100 p-1.5 rounded-full"><Type size={16} /></div>
-                   Ny tekst
+                 <button onClick={() => selectedAlbumId ? onAddAlbumItem(selectedAlbumId, 'text') : onAddItem('text')} className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
+                   <div className="bg-gray-100 p-1.5 rounded-full"><Type size={16} /></div> Ny tekst
                  </button>
-
              </div>
           </div>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
-        {showAddImageModal && <AddImageModal onConfirm={(filenames) => { onAddItem('image', filenames); setShowAddImageModal(false); }} onCancel={() => setShowAddImageModal(false)} />}
+        {showAddImageModal && <AddImageModal onConfirm={(filenames) => {
+          if (selectedAlbumId) { onAddAlbumItem(selectedAlbumId, 'image', filenames); }
+          else { onAddItem('image', filenames); }
+          setShowAddImageModal(false);
+        }} onCancel={() => setShowAddImageModal(false)} />}
       </AnimatePresence>
 
       <AnimatePresence>
-        {pageToDelete && <ConfirmModal title="Slett side?" message="Hvis du sletter denne siden, forsvinner også alle bildene på den. Er du sikker?" onConfirm={() => { onDeletePage(); setPageToDelete(false); }} onCancel={() => setPageToDelete(false)} />}
+        {pageToDelete && <ConfirmModal title="Slett side?" message="Alle bildene på siden forsvinner. Er du sikker?" onConfirm={() => { onDeletePage(); setPageToDelete(false); }} onCancel={() => setPageToDelete(false)} />}
+      </AnimatePresence>
+
+      {/* Create Album Modal */}
+      <AnimatePresence>
+        {showCreateAlbum && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+              <CreateAlbumForm onSave={(data) => { onCreateAlbum(data); setShowCreateAlbum(false); }} onCancel={() => setShowCreateAlbum(false)} />
+            </motion.div>
+          </div>
+        )}
       </AnimatePresence>
     </div>
+  );
+}
+
+// Simple inline form for creating album
+function CreateAlbumForm({ onSave, onCancel }: {
+  onSave: (data: { title: string; emoji: string; description: string; date: string }) => void;
+  onCancel: () => void;
+}) {
+  const [title, setTitle] = useState('');
+  const [emoji, setEmoji] = useState('📸');
+  const [description, setDescription] = useState('');
+  const [date, setDate] = useState('');
+  const emojis = ['📸', '🏔️', '🎂', '🌊', '🎄', '🌸', '🎉', '✈️', '🦉', '🏠', '❤️', '🎓', '⚽', '🎵', '🍕', '🐶'];
+  return (
+    <>
+      <h3 className="text-xl font-serif mb-5">Ny samling</h3>
+      <div className="mb-4">
+        <label className="text-xs uppercase tracking-wider font-semibold text-gray-400 mb-2 block">Ikon</label>
+        <div className="flex flex-wrap gap-1.5">
+          {emojis.map(e => (
+            <button key={e} onClick={() => setEmoji(e)}
+              className={cn("w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all",
+                emoji === e ? "bg-blue-100 ring-2 ring-blue-400 scale-110" : "bg-gray-50 hover:bg-gray-100"
+              )}>{e}</button>
+          ))}
+        </div>
+      </div>
+      <div className="mb-4">
+        <label className="text-xs uppercase tracking-wider font-semibold text-gray-400 mb-1.5 block">Tittel</label>
+        <input autoFocus value={title} onChange={e => setTitle(e.target.value)} placeholder="F.eks. Italia 2024"
+          className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-900" />
+      </div>
+      <div className="mb-4">
+        <label className="text-xs uppercase tracking-wider font-semibold text-gray-400 mb-1.5 block">Beskrivelse (valgfri)</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Noen ord..." rows={2}
+          className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-900 resize-none" />
+      </div>
+      <div className="mb-6">
+        <label className="text-xs uppercase tracking-wider font-semibold text-gray-400 mb-1.5 block">Dato (valgfri)</label>
+        <input type="month" value={date} onChange={e => setDate(e.target.value)}
+          className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-900" />
+      </div>
+      <div className="flex gap-2 justify-end">
+        <button onClick={onCancel} className="px-4 py-2.5 text-sm text-gray-500 rounded-xl hover:bg-gray-100">Avbryt</button>
+        <button onClick={() => title.trim() && onSave({ title: title.trim(), emoji, description, date })} disabled={!title.trim()}
+          className="px-5 py-2.5 text-sm bg-gray-900 text-white rounded-xl hover:bg-gray-800 disabled:opacity-30 font-medium">Opprett</button>
+      </div>
+    </>
   );
 }
 
@@ -867,13 +1041,20 @@ export default function App() {
   const { isSyncing, syncMessage, setSyncMessage, syncToCloud, syncProgress, cleanProposal, confirmClean, cancelClean, repairImageUrls } = useGallerySync();
   const [cloudCheckMessage, setCloudCheckMessage] = useState<{title: string, message: string} | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+
+  // Albums state
+  const [albums, setAlbums] = useState<Album[]>(() => {
+    const saved = localStorage.getItem('hs-gallery-albums');
+    return saved ? JSON.parse(saved) : [];
+  });
   
   // Persistence Safety
   const [conflictData, setConflictData] = useState<{localPages: Page[], cloudPages: Page[]} | null>(null);
   const lastSyncedPagesRef = useRef<string>(JSON.stringify(pages));
+  const lastSyncedAlbumsRef = useRef<string>(JSON.stringify(albums));
   
   // Calculate if we have unsaved changes
-  const hasUnsavedChanges = JSON.stringify(pages) !== lastSyncedPagesRef.current;
+  const hasUnsavedChanges = JSON.stringify(pages) !== lastSyncedPagesRef.current || JSON.stringify(albums) !== lastSyncedAlbumsRef.current;
 
   // Load from Supabase on mount
   // Load from Supabase on mount
@@ -914,6 +1095,19 @@ export default function App() {
         } else {
             console.error("Cloud data is not an array:", cloudPages);
         }
+      }
+
+      // Also fetch albums (id=2)
+      const { data: albumData } = await supabase
+        .from('gallery_content')
+        .select('data')
+        .eq('id', 2)
+        .single();
+      
+      if (albumData?.data && Array.isArray(albumData.data)) {
+        console.log("Loaded albums from cloud:", (albumData.data as Album[]).length);
+        setAlbums(albumData.data as Album[]);
+        lastSyncedAlbumsRef.current = JSON.stringify(albumData.data);
       }
     };
     fetchContent();
@@ -1049,11 +1243,102 @@ export default function App() {
     setCurrentPageIndex(prev => Math.max(0, prev - 1));
   };
 
+  // --- Album CRUD ---
+  const handleCreateAlbum = (data: { title: string; emoji: string; description: string; date: string }) => {
+    const newAlbum: Album = {
+      id: `album-${Date.now()}`,
+      title: data.title,
+      emoji: data.emoji || '📸',
+      description: data.description || undefined,
+      date: data.date || undefined,
+      sortOrder: albums.length,
+      items: [],
+    };
+    setAlbums(prev => [...prev, newAlbum]);
+  };
+
+  const handleUpdateAlbum = (id: string, updates: Partial<Album>) => {
+    setAlbums(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a));
+  };
+
+  const handleDeleteAlbum = (id: string) => {
+    setAlbums(prev => prev.filter(a => a.id !== id));
+  };
+
+  const handleUpdateAlbumItem = (albumId: string, itemId: string, updates: Partial<GalleryItem>) => {
+    setAlbums(prev => prev.map(a => {
+      if (a.id !== albumId) return a;
+      return { ...a, items: a.items.map(item => item.id === itemId ? { ...item, ...updates } as GalleryItem : item) };
+    }));
+  };
+
+  const handleAddAlbumItem = (albumId: string, type: 'image' | 'text', payload?: any) => {
+    if (type === 'text') {
+      const newItem: TextItem = {
+        id: `txt-${Date.now()}`,
+        type: 'text',
+        content: "Ny tekst... klikk for å redigere.",
+        align: 'center',
+        size: 'md'
+      };
+      setAlbums(prev => prev.map(a => a.id === albumId ? { ...a, items: [newItem, ...a.items] } : a));
+    } else if (type === 'image' && payload) {
+      const inputs = Array.isArray(payload) ? payload : [payload];
+      const newItems: ImageItem[] = inputs.map((input: string | File, idx: number) => {
+        if (input instanceof File) {
+          const previewUrl = URL.createObjectURL(input);
+          return {
+            id: `img-${Date.now()}-${idx}`,
+            type: 'image' as const,
+            file: input,
+            thumbnailUrl: previewUrl,
+            largeUrl: previewUrl,
+            originalUrl: previewUrl,
+            title: '', caption: '', altText: input.name,
+            width: 800, height: 600,
+          };
+        }
+        const filename = typeof input === 'string' ? input : '';
+        const baseName = filename.replace(/\.[^/.]+$/, '');
+        return {
+          id: `img-${Date.now()}-${idx}`,
+          type: 'image' as const,
+          thumbnailUrl: `/images/thumbs/${baseName}-2.jpg`,
+          largeUrl: `/images/original/${filename}`,
+          originalUrl: `/images/original/${filename}`,
+          title: '', caption: '', altText: baseName,
+          width: 800, height: 600,
+        };
+      });
+      setAlbums(prev => prev.map(a => a.id === albumId ? { ...a, items: [...newItems, ...a.items] } : a));
+    }
+  };
+
+  const handleDeleteAlbumItem = (albumId: string, itemId: string) => {
+    setAlbums(prev => prev.map(a => a.id === albumId ? { ...a, items: a.items.filter(i => i.id !== itemId) } : a));
+  };
+
+  // Persist albums to localStorage
+  useEffect(() => {
+    localStorage.setItem('hs-gallery-albums', JSON.stringify(albums));
+  }, [albums]);
+
   const handleSyncToCloud = async () => {
+      // Sync pages
       const updatedPages = await syncToCloud(pages);
       if (updatedPages) {
           setPages(updatedPages);
           lastSyncedPagesRef.current = JSON.stringify(updatedPages);
+      }
+      // Sync albums to Supabase
+      if (supabase) {
+        try {
+          await supabase.from('gallery_content').upsert({ id: 2, data: albums });
+          lastSyncedAlbumsRef.current = JSON.stringify(albums);
+          console.log("Albums synced to cloud.");
+        } catch (err) {
+          console.error("Album sync failed:", err);
+        }
       }
   };
 
@@ -1148,6 +1433,7 @@ export default function App() {
               isAdmin={session.isAdmin}
               pages={pages}
               currentPageIndex={currentPageIndex}
+              albums={albums}
               onLogout={() => {
                 setSession({ isAuthenticated: false, isAdmin: false });
                 localStorage.removeItem('hs-gallery-session');
@@ -1158,9 +1444,13 @@ export default function App() {
               onChangePage={setCurrentPageIndex}
               onAddPage={handleAddPage}
               onDeletePage={handleDeletePage}
-
               onOpenSettings={() => setShowSettings(true)}
-
+              onCreateAlbum={handleCreateAlbum}
+              onUpdateAlbum={handleUpdateAlbum}
+              onDeleteAlbum={handleDeleteAlbum}
+              onUpdateAlbumItem={handleUpdateAlbumItem}
+              onAddAlbumItem={handleAddAlbumItem}
+              onDeleteAlbumItem={handleDeleteAlbumItem}
             />
             {/* Sync Button (Floating) */}
             {session.isAdmin && (
