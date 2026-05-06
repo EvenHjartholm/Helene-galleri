@@ -311,9 +311,9 @@ export default function FreeCanvasGallery({
                       onError={e => { if (e.currentTarget.src !== item.originalUrl) { e.currentTarget.src = item.originalUrl; e.currentTarget.classList.remove('opacity-0'); } }} />
                     {!isAdmin && <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 z-20" />}
                     {/* Minner badge */}
-                    {imageIdsInMinner?.has(item.originalUrl) && (
-                      <div className="absolute top-2 left-2 z-20 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5 shadow-sm border border-white/50 text-xs flex items-center gap-0.5" title="I et minne">
-                        <span className="text-[10px]">\u2728</span>
+                    {imageIdsInMinner?.has((item as ImageItem).originalUrl) && (
+                      <div className="absolute top-2 left-2 z-30 bg-amber-50/95 backdrop-blur-sm rounded-full px-2 py-0.5 shadow-md border border-amber-200/60 flex items-center gap-1" title="Lagt i et minne">
+                        <span className="text-xs">{'\u2728'}</span>
                       </div>
                     )}
                     {/* Tags display */}
@@ -342,12 +342,12 @@ export default function FreeCanvasGallery({
                         {albums && albums.length > 0 && onAddToAlbum && (
                           <div className="relative">
                             <button onClick={() => { setAlbumDropdown(albumDropdown === item.id ? null : item.id); setTagDropdown(null); }}
-                              className={cn("p-1 rounded", imageIdsInMinner?.has(item.originalUrl) ? "text-amber-500 hover:text-amber-600 hover:bg-amber-50" : "text-gray-400 hover:text-blue-600 hover:bg-blue-50")} title="Legg i minne">
+                              className={cn("p-1 rounded", imageIdsInMinner?.has((item as ImageItem).originalUrl) ? "text-amber-500 hover:text-amber-600 hover:bg-amber-50" : "text-gray-400 hover:text-blue-600 hover:bg-blue-50")} title="Legg i minne">
                               <FolderPlus size={12} />
                             </button>
                             {albumDropdown === item.id && (
                               <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-50 min-w-[180px]">
-                                <div className="px-3 py-2 text-[10px] uppercase font-bold text-gray-400 tracking-wider border-b border-gray-100">\u2728 Legg i minne</div>
+                                <div className="px-3 py-2 text-[10px] uppercase font-bold text-gray-400 tracking-wider border-b border-gray-100">{"\u2728"} Legg i minne</div>
                                 {albums.map(a => (
                                   <button key={a.id} onClick={() => { onAddToAlbum(item as ImageItem, a.id); setAlbumDropdown(null); }}
                                     className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 transition-colors">

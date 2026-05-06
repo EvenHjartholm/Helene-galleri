@@ -1017,11 +1017,11 @@ function CreateAlbumForm({ onSave, onCancel }: {
   onCancel: () => void;
 }) {
   const [title, setTitle] = useState('');
-  const [emoji, setEmoji] = useState('\u2728');
+  const [emoji, setEmoji] = useState('✨');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
-  const emojis = ['\u2728', '\ud83c\udf05', '\ud83c\udfd6\ufe0f', '\ud83c\udfd4\ufe0f', '\ud83c\udf0a', '\ud83c\udfe0', '\u2764\ufe0f', '\ud83c\udf84', '\u2600\ufe0f', '\ud83c\udf38', '\ud83c\udf89', '\u2708\ufe0f', '\ud83e\udd89', '\ud83d\udcf8', '\ud83c\udf42', '\ud83d\udc36'];
+  const emojis = ['✨', '\ud83c\udf05', '\ud83c\udfd6\ufe0f', '\ud83c\udfd4\ufe0f', '\ud83c\udf0a', '\ud83c\udfe0', '\u2764\ufe0f', '\ud83c\udf84', '\u2600\ufe0f', '\ud83c\udf38', '\ud83c\udf89', '\u2708\ufe0f', '\ud83e\udd89', '\ud83d\udcf8', '\ud83c\udf42', '\ud83d\udc36'];
   return (
     <>
       <h3 className="text-xl font-serif mb-5">Nytt minne</h3>
