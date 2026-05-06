@@ -10,13 +10,7 @@ interface FaceOverlayProps {
   availableTags?: string[];
 }
 
-// Get person name suggestions (most recently/frequently used person names)
-function getPersonSuggestions(availableTags?: string[]): string[] {
-  if (!availableTags || availableTags.length === 0) return [];
-  // Filter out obvious non-person tags (lowercase common objects)
-  const objectWords = new Set(['ku', 'hund', 'katt', 'fugl', 'hest', 'sau', 'bil', 'båt', 'person', 'ball', 'sykkel']);
-  return availableTags.filter(t => !objectWords.has(t.toLowerCase()));
-}
+
 
 export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPerson, existingTags, availableTags }: FaceOverlayProps) {
   const { detecting, detect, abort } = useObjectDetection();
@@ -29,7 +23,6 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
   const hasDetected = useRef(false);
 
   const tags = existingTags || [];
-  const personNames = useMemo(() => getPersonSuggestions(availableTags), [availableTags]);
 
   // Autocomplete based on current input
   const suggestions = useMemo(() => {
@@ -77,8 +70,6 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
       {/* Detection boxes for untagged objects */}
       {hasUntaggedObjects && visibleObjects.map(obj => {
         const isPerson = obj.label === 'person';
-        // For persons: suggest a known name if available
-        const suggestedName = isPerson && personNames.length > 0 ? personNames[0] : null;
 
         return (
           <div key={obj.id} className="absolute pointer-events-auto"
@@ -120,22 +111,8 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
                   )}
                 </div>
               </div>
-            ) : isPerson && suggestedName ? (
-              // Person with a suggestion: "Er dette Helene Svelle?"
-              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50"
-                onClick={e => e.stopPropagation()}>
-                <div className="bg-black/80 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-xl border border-white/10">
-                  <div className="flex items-center gap-1.5 whitespace-nowrap">
-                    <span className="text-[10px] text-white/90 font-medium">👤 {suggestedName}?</span>
-                    <button onClick={() => handleTag(suggestedName, obj.id)}
-                      className="text-[9px] font-bold bg-green-500/80 hover:bg-green-500 text-white px-2 py-0.5 rounded-full transition-colors">Ja</button>
-                    <button onClick={() => { setActiveObj(obj.id); setNameInput(''); setTimeout(() => inputRef.current?.focus(), 50); }}
-                      className="text-[9px] font-bold bg-white/20 hover:bg-white/30 text-white px-2 py-0.5 rounded-full transition-colors">Nei</button>
-                  </div>
-                </div>
-              </div>
             ) : isPerson ? (
-              // Person without a suggestion: "Hvem er dette?" with input
+              // Person: "Hvem er dette?" with input + autocomplete
               <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50 min-w-[160px]"
                 onClick={e => e.stopPropagation()}>
                 <div className="relative">
@@ -150,6 +127,16 @@ export default function FaceOverlay({ imageElement, itemId, isVisible, onTagPers
                         setActiveObj(null); setNameInput('');
                       }
                     }} />
+                  {activeObj === obj.id && suggestions.length > 0 && (
+                    <div className="absolute bottom-full left-0 right-0 mb-1 bg-white/95 backdrop-blur-md rounded-lg shadow-xl border border-gray-200 overflow-hidden">
+                      {suggestions.map(s => (
+                        <button key={s} onClick={() => handleTag(s, obj.id)}
+                          className="w-full text-left px-3 py-1.5 text-xs hover:bg-blue-50 text-gray-700 transition-colors">
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
