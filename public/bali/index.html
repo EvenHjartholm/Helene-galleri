@@ -101,7 +101,7 @@
   .leg li::before{content:'·';position:absolute;left:5px;top:3px;font-size:22px;color:var(--sun);line-height:1;}
 
   /* ================= OPPHOLD ================= */
-  .stop{margin:40px 0;}
+  .stop{margin:48px 0;}
   .banner{position:relative;overflow:hidden;border-radius:12px 12px 0 0;padding:24px 22px 22px;color:#FFF6E4;}
   .banner .doodle{position:absolute;right:18px;bottom:12px;opacity:.55;}
   .banner .b-eyebrow{display:block;font-size:10px;letter-spacing:.17em;text-transform:uppercase;opacity:.9;font-weight:600;}
@@ -180,8 +180,10 @@
     box-shadow:0 8px 18px -11px rgba(225,145,58,.95);}
   .exp .eintro{font-size:16px;color:var(--ink-soft);margin:14px 0 22px;max-width:34em;}
   .exp ul{list-style:none;margin:0;padding:0;}
-  .exp > ul > li{padding:20px 0;border-bottom:1px dotted var(--line);}
-  .exp > ul > li:last-child{border-bottom:0;}
+  .exp > ul > li{padding:17px 16px 19px;margin:0 0 14px;background:var(--paper);
+    border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 10px 22px -19px rgba(38,48,43,.6);}
+  .exp > ul > li:last-child{margin-bottom:0;}
   .etop{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:7px;}
   .chip{font-size:9px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;
     padding:4px 10px;border-radius:100px;background:var(--sea-pale);color:var(--sea-deep);white-space:nowrap;}
@@ -259,15 +261,34 @@
     .go{padding:6px 0;margin-top:6px;}
     .leg{padding-left:20px;}
     .verdict{padding:20px 18px 22px;}
-    .exp > ul > li{padding:18px 0;}
+    .exp > ul > li{padding:14px 13px 16px;}
   }
 
   /* ---- bevegelse ---- */
   .progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:60;
     background:linear-gradient(90deg,var(--sun),var(--sea));transition:width .12s linear;}
-  .reveal{opacity:0;transform:translateY(28px);
-    transition:opacity .8s cubic-bezier(.2,.7,.3,1),transform .8s cubic-bezier(.2,.7,.3,1);}
+  .reveal{opacity:0;transform:translateY(24px);
+    transition:opacity .75s cubic-bezier(.16,.8,.26,1),transform .75s cubic-bezier(.16,.8,.26,1);
+    transition-delay:var(--d,0ms);}
   .reveal.in{opacity:1;transform:none;}
+  .rv-left.reveal{transform:translateX(-34px);}
+  .rv-pop.reveal{transform:translateY(20px) scale(.965);}
+  .rv-tilt.reveal{transform:translateY(16px) rotate(-1.8deg);}
+  .rv-left.reveal.in,.rv-pop.reveal.in,.rv-tilt.reveal.in{transform:none;}
+  /* barn som lander litt etter forelderen */
+  .leg.reveal .day{opacity:0;transform:rotate(-5deg) translateX(-14px);
+    transition:opacity .35s ease,transform .55s cubic-bezier(.34,1.56,.64,1);
+    transition-delay:calc(var(--d,0ms) + 180ms);}
+  .leg.reveal.in .day{opacity:1;transform:rotate(-.5deg);}
+  .banner.reveal .b-dates{opacity:0;transform:translateY(10px) scale(.88);
+    transition:opacity .35s ease,transform .55s cubic-bezier(.34,1.56,.64,1);
+    transition-delay:calc(var(--d,0ms) + 230ms);}
+  .banner.reveal.in .b-dates{opacity:1;transform:none;}
+  .exp > ul > li.reveal .eico{opacity:0;transform:scale(.45) rotate(-16deg);
+    transition:opacity .3s ease,transform .55s cubic-bezier(.34,1.56,.64,1);
+    transition-delay:calc(var(--d,0ms) + 170ms);}
+  .exp > ul > li.reveal.in .eico{opacity:1;transform:rotate(-2deg) scale(1);}
+  .exp > ul > li:nth-child(even).reveal.in .eico{transform:rotate(2.5deg) scale(1);}
   .hero .scene{will-change:transform;}
   .banner .doodle{animation:drift 7s ease-in-out infinite;}
   @keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
@@ -1712,10 +1733,23 @@
                     '.signoff p, .signoff .sig';
   if(!reduced){
     document.querySelectorAll(revealSel).forEach(el=>el.classList.add('reveal'));
+    // ulike innsig per elementtype
+    document.querySelectorAll('.leg, .exp > ul > li').forEach(el=>el.classList.add('rv-left'));
+    document.querySelectorAll('.hotel, .banner, .runs').forEach(el=>el.classList.add('rv-pop'));
+    document.querySelectorAll('.pick-note, .verdict, .exp .ehead').forEach(el=>el.classList.add('rv-tilt'));
+    // trinnvis forsinkelse innen hver liste
+    document.querySelectorAll('.exp > ul').forEach(ul=>{
+      Array.from(ul.children).forEach((li,i)=>li.style.setProperty('--d', Math.min(i*60, 240)+'ms'));
+    });
+    document.querySelectorAll('.card').forEach(card=>{
+      card.querySelectorAll(':scope > .hotel').forEach((h,i)=>h.style.setProperty('--d', (i*110)+'ms'));
+    });
     const io = new IntersectionObserver(entries=>{
       entries.forEach((e,i)=>{
         if(e.isIntersecting){
-          e.target.style.transitionDelay = Math.min(i*55, 220) + 'ms';
+          if(!e.target.style.getPropertyValue('--d')){
+            e.target.style.setProperty('--d', Math.min(i*55, 220)+'ms');
+          }
           e.target.classList.add('in');
           io.unobserve(e.target);
         }
