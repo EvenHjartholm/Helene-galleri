@@ -33,3 +33,4 @@ public/images/large
 !public/images/thumbs/*.jpg
 !public/images/thumbs/*.jpeg
 !public/images/thumbs/*.png
+!public/bali/img/*.jpg
