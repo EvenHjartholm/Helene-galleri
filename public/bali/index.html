@@ -89,7 +89,9 @@
   .leg{margin:34px 0;padding-left:26px;position:relative;}
   .leg::before{content:'';position:absolute;left:5px;top:6px;bottom:6px;width:2px;
     background:repeating-linear-gradient(to bottom,var(--sun) 0 6px,transparent 6px 13px);}
-  .leg .day{display:block;font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--sun);font-weight:700;margin-bottom:5px;}
+  .leg .day{display:inline-block;font-size:13.5px;letter-spacing:.15em;text-transform:uppercase;
+    color:#8A5F1C;font-weight:700;margin-bottom:9px;background:var(--sun-pale);
+    border:1px solid rgba(225,145,58,.55);border-radius:7px;padding:6px 12px 5px;transform:rotate(-.5deg);}
   .leg .route{font-family:'Fraunces',serif;font-size:22px;font-weight:400;display:block;line-height:1.3;}
   .leg .facts{margin:11px 0 0;font-size:13.5px;color:var(--ink-soft);letter-spacing:.02em;}
   .leg .facts b{font-weight:600;color:var(--ink);}
@@ -108,6 +110,9 @@
   .b--jungle{background:#1E6A52;}
   .b--sea{background:#106E70;}
   .b--city{background:#3C5567;}
+  .b-dates{display:inline-block;margin-top:13px;background:#FFF6E4;color:var(--ink);
+    font-family:'Fraunces',Georgia,serif;font-size:16.5px;font-weight:500;letter-spacing:.01em;
+    padding:7px 16px 8px;border-radius:100px;box-shadow:0 4px 12px -7px rgba(0,0,0,.55);}
 
   .card{background:var(--paper-2);border:1px solid var(--line);border-top:0;
     border-radius:0 0 12px 12px;padding:24px 22px 28px;}
@@ -117,7 +122,18 @@
   .runs li:first-child{border-top:0;}
   .runs .rk{color:var(--pencil);font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:600;white-space:nowrap;}
   .runs .rv{font-weight:600;text-align:right;}
+  .runs li:first-child .rv{font-family:'Fraunces',Georgia,serif;font-size:17.5px;font-weight:500;color:var(--sea-deep);}
   .why{font-family:'Fraunces',serif;font-size:19.5px;font-weight:300;line-height:1.5;margin:0 0 8px;}
+
+  /* ================= TRENING ================= */
+  .train{margin:20px 0 6px;padding:15px 17px 16px;background:var(--sea-pale);
+    border:1.5px dashed rgba(14,110,114,.45);border-radius:10px;}
+  .train .tr-t{display:block;font-size:10px;letter-spacing:.17em;text-transform:uppercase;
+    font-weight:700;color:var(--sea-deep);margin-bottom:9px;}
+  .train ul{list-style:none;margin:0;padding:0;}
+  .train li{display:flex;gap:12px;padding:5px 0;font-size:15px;line-height:1.55;color:var(--sea-deep);}
+  .train .tw{flex:0 0 62px;font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+    font-weight:700;opacity:.65;padding-top:4px;}
 
   /* ================= HOTELL ================= */
   .pick-note{font-family:'Caveat',cursive;font-size:21px;color:var(--pen);
@@ -327,6 +343,7 @@
       </svg>
       <span class="b-eyebrow">Opphold 01 · Payangan, Gianyar</span>
       <h3>Elvedalen</h3>
+      <span class="b-dates">man 22. – lør 27. februar</span>
     </div>
     <div class="card">
       <ul class="runs">
@@ -336,6 +353,14 @@
         <li><span class="rk">Til Ubud sentrum</span><span class="rv">25 minutter</span></li>
       </ul>
       <p class="why">Nord for Ubud slutter trafikken og bambusskogen begynner. Dette er også Balis håndverkssenter — sølvsmedene, treskjærerne og kokkene holder til innen en halvtimes radius.</p>
+
+      <div class="train">
+        <span class="tr-t">Trening der vi bor</span>
+        <ul>
+          <li><span class="tw">Morgen</span><span>Lengder i den oppvarmede 89-meteren før frokost, eller joggeløypa i elvedalen — begge innenfor porten. Daglig yoga med instruktør på fast timeplan.</span></li>
+          <li><span class="tw">Kveld</span><span>Gym-økt eller rolig kveldsyoga. Bassenget er oppvarmet, så en siste svøm etter mørkets frembrudd går fint.</span></li>
+        </ul>
+      </div>
 
       <span class="pick-note">Dette kan være en mulighet ↓</span>
 
@@ -507,6 +532,7 @@
       </svg>
       <span class="b-eyebrow">Opphold 02 · Amed, Karangasem</span>
       <h3>Klart vann</h3>
+      <span class="b-dates">lør 27. feb – ons 3. mars</span>
     </div>
     <div class="card">
       <ul class="runs">
@@ -516,6 +542,14 @@
         <li><span class="rk">Til revet</span><span class="rv">20 meter fra stranden</span></li>
       </ul>
       <p class="why">Nordøstkysten ligger i le for vestmonsunen, og er samtidig Sørøst-Asias fridykkersentrum. Her er alt vi gjør noe vi gjør med kroppen.</p>
+
+      <div class="train">
+        <span class="tr-t">Trening der vi bor</span>
+        <ul>
+          <li><span class="tw">Morgen</span><span>Yoga i shalaen eller basseng-økt i 25-meteren på eiendommen — og revet tjue meter unna er turens fineste morgensvøm.</span></li>
+          <li><span class="tw">Kveld</span><span>Treningsrommet på stedet, eller en rolig solnedgangssvøm i bukta.</span></li>
+        </ul>
+      </div>
 
       <span class="pick-note">Her er hele poenget med turen ↓</span>
 
@@ -674,6 +708,7 @@
       </svg>
       <span class="b-eyebrow">Opphold 01 · Pecatu, Bukit-halvøya</span>
       <h3>Landingsputen</h3>
+      <span class="b-dates">man 22. – ons 24. februar</span>
     </div>
     <div class="card">
       <ul class="runs">
@@ -683,6 +718,14 @@
         <li><span class="rk">Fra flyplassen</span><span class="rv">40 minutter</span></li>
       </ul>
       <p class="why">Førti minutter fra flyplassen, og et sted som er bygget rundt trening. To netter er nok til jetlag, en surfetime og en klippevandring.</p>
+
+      <div class="train">
+        <span class="tr-t">Trening der vi bor</span>
+        <ul>
+          <li><span class="tw">Morgen</span><span>Morgenyoga i den åpne shalaen, så funksjonell økt i gymmet — alt på stedet, og det er akkurat dette stedet er bygget for.</span></li>
+          <li><span class="tw">Kveld</span><span>Gymmet er åpent hele dagen, så kveldsøkta går fint — eller en surfetime i det siste lyset.</span></li>
+        </ul>
+      </div>
 
       <div class="hotel mine">
         <!-- BILDE: bytt src til lokal fil, f.eks. /bali/img/…jpg -->
@@ -762,6 +805,7 @@
       </svg>
       <span class="b-eyebrow">Opphold 02 · Payangan, Gianyar</span>
       <h3>Elvedalen</h3>
+      <span class="b-dates">ons 24. – søn 28. februar</span>
     </div>
     <div class="card">
       <ul class="runs">
@@ -771,6 +815,14 @@
         <li><span class="rk">Til Ubud sentrum</span><span class="rv">25 minutter</span></li>
       </ul>
       <p class="why">Balis håndverkssenter. Fire netter gir plass til tre kursdager og fortsatt en hviledag.</p>
+
+      <div class="train">
+        <span class="tr-t">Trening der vi bor</span>
+        <ul>
+          <li><span class="tw">Morgen</span><span>Lengder i den oppvarmede 89-meteren før frokost, eller joggeløypa i elvedalen — begge innenfor porten. Daglig yoga med instruktør på fast timeplan.</span></li>
+          <li><span class="tw">Kveld</span><span>Gym-økt eller rolig kveldsyoga. Bassenget er oppvarmet, så en siste svøm etter mørkets frembrudd går fint.</span></li>
+        </ul>
+      </div>
 
       <div class="hotel mine">
         <!-- BILDE: bytt src til lokal fil, f.eks. /bali/img/…jpg -->
@@ -926,6 +978,7 @@
       </svg>
       <span class="b-eyebrow">Opphold 03 · Amed, Karangasem</span>
       <h3>Klart vann</h3>
+      <span class="b-dates">søn 28. feb – ons 3. mars</span>
     </div>
     <div class="card">
       <ul class="runs">
@@ -935,6 +988,14 @@
         <li><span class="rk">Til revet</span><span class="rv">20 meter fra stranden</span></li>
       </ul>
       <p class="why">Finalen, og Sørøst-Asias fridykkersentrum. Tre netter rekker en introdag, men ikke et fullt nivå 1.</p>
+
+      <div class="train">
+        <span class="tr-t">Trening der vi bor</span>
+        <ul>
+          <li><span class="tw">Morgen</span><span>Yoga i shalaen eller basseng-økt i 25-meteren på eiendommen — og revet tjue meter unna er turens fineste morgensvøm.</span></li>
+          <li><span class="tw">Kveld</span><span>Treningsrommet på stedet, eller en rolig solnedgangssvøm i bukta.</span></li>
+        </ul>
+      </div>
 
       <div class="hotel mine">
         <!-- BILDE: bytt src til lokal fil, f.eks. /bali/img/…jpg -->
@@ -1060,6 +1121,7 @@
       </svg>
       <span class="b-eyebrow">Opphold 01 · Payangan, Gianyar</span>
       <h3>Elvedalen</h3>
+      <span class="b-dates">man 22. – tors 25. februar</span>
     </div>
     <div class="card">
       <ul class="runs">
@@ -1069,6 +1131,14 @@
         <li><span class="rk">Til Ubud sentrum</span><span class="rv">25 minutter</span></li>
       </ul>
       <p class="why">Kort, men nok til to aktive dager: én på sykkel og én på kjøkkenet.</p>
+
+      <div class="train">
+        <span class="tr-t">Trening der vi bor</span>
+        <ul>
+          <li><span class="tw">Morgen</span><span>Lengder i den oppvarmede 89-meteren før frokost, eller joggeløypa i elvedalen — begge innenfor porten. Daglig yoga med instruktør på fast timeplan.</span></li>
+          <li><span class="tw">Kveld</span><span>Gym-økt eller rolig kveldsyoga. Bassenget er oppvarmet, så en siste svøm etter mørkets frembrudd går fint.</span></li>
+        </ul>
+      </div>
 
       <div class="hotel mine">
         <!-- BILDE: bytt src til lokal fil, f.eks. /bali/img/…jpg -->
@@ -1189,6 +1259,7 @@
       </svg>
       <span class="b-eyebrow">Opphold 02 · Amed, Karangasem</span>
       <h3>Klart vann</h3>
+      <span class="b-dates">tors 25. feb – man 1. mars</span>
     </div>
     <div class="card">
       <ul class="runs">
@@ -1198,6 +1269,14 @@
         <li><span class="rk">Til revet</span><span class="rv">20 meter fra stranden</span></li>
       </ul>
       <p class="why">Hoveddelen av Bali-oppholdet, og nok tid til et fullt fridykkerkurs.</p>
+
+      <div class="train">
+        <span class="tr-t">Trening der vi bor</span>
+        <ul>
+          <li><span class="tw">Morgen</span><span>Yoga i shalaen eller basseng-økt i 25-meteren på eiendommen — og revet tjue meter unna er turens fineste morgensvøm.</span></li>
+          <li><span class="tw">Kveld</span><span>Treningsrommet på stedet, eller en rolig solnedgangssvøm i bukta.</span></li>
+        </ul>
+      </div>
 
       <div class="hotel mine">
         <!-- BILDE: bytt src til lokal fil, f.eks. /bali/img/…jpg -->
@@ -1292,6 +1371,7 @@
       </svg>
       <span class="b-eyebrow">Opphold 03 · Singapore</span>
       <h3>Hagen i byen</h3>
+      <span class="b-dates">man 1. – ons 3. mars</span>
     </div>
     <div class="card">
       <ul class="runs">
@@ -1301,6 +1381,14 @@
         <li><span class="rk">Tidsforskjell</span><span class="rv">Ingen</span></li>
       </ul>
       <p class="why">To fulle dager, og begge kan brukes utendørs. Det er det få forventer av Singapore.</p>
+
+      <div class="train">
+        <span class="tr-t">Trening der vi bor</span>
+        <ul>
+          <li><span class="tw">Morgen</span><span>Lengder i infinity-bassenget i wellness-etasjen før frokost, eller løpetur opp i Fort Canning-parken ti minutter unna.</span></li>
+          <li><span class="tw">Kveld</span><span>Kveldsløp langs Singapore River ned til Marina Bay — flatt, opplyst og folksomt hele kvelden.</span></li>
+        </ul>
+      </div>
 
       <div class="hotel mine">
         <!-- BILDE: bytt src til lokal fil, f.eks. /bali/img/…jpg -->
