@@ -188,11 +188,10 @@
   .chip.watch{background:var(--sun-pale);color:#8A5F1C;}
   .etime{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--pencil);font-weight:600;}
   .ename{font-family:'Fraunces',serif;font-weight:400;font-size:21px;display:flex;align-items:center;gap:11px;line-height:1.25;}
-  .eico{flex:0 0 36px;width:36px;height:36px;border-radius:50%;background:var(--sun-pale);
-    border:1.5px solid rgba(225,145,58,.5);display:inline-flex;align-items:center;justify-content:center;
-    font-size:18px;line-height:1;}
+  .eico{flex:0 0 34px;width:34px;height:34px;color:var(--sun);transform:rotate(-2deg);}
+  .exp > ul > li:nth-child(even) .eico{transform:rotate(2.5deg);}
   .emeta{display:block;font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;font-weight:700;
-    color:var(--sea);margin:5px 0 8px 47px;}
+    color:var(--sea);margin:5px 0 8px 45px;}
   .exp p{margin:0;font-size:16px;color:var(--ink-soft);}
   .dist{margin:10px 0 0 !important;padding:2px 0 2px 12px;background:none;
     border-left:2px solid var(--line);border-radius:0;
@@ -283,6 +282,34 @@
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0" aria-hidden="true">
+  <defs>
+    <symbol id="ic-cook" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="21" rx="8.5" ry="3.4"/><path d="M20.5 20.2 29 17.8"/><path d="M9 15c1.2-1.8-.8-3 .3-5.4M14.5 15c1.2-1.8-.8-3 .3-5.4"/></g></symbol>
+    <symbol id="ic-bike" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="22" r="5.2"/><circle cx="23.5" cy="22" r="5.2"/><path d="M8.5 22l5-8.5h6.5l3.5 8.5M13.5 13.5 17 22M20 13.5l-1.2-2.8h-2.6"/></g></symbol>
+    <symbol id="ic-ring" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="19.5" r="7.3"/><path d="M12.6 9.8 16 6.4l3.4 3.4L16 12.5z"/><path d="M8.5 7.5l-1.6-1.6M23.5 7.5l1.6-1.6"/></g></symbol>
+    <symbol id="ic-bird" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 20.5c.8-5 4.8-8 9.4-8 3 0 5.4 1.2 6.4 3.2-1.8 5.4-6.5 8.3-11.4 8.3-1.8 0-3.4-.6-4.4-3.5z"/><path d="M13.5 17.5c2-2.6 4.8-3.6 7.6-3.4"/><path d="M24.4 14.6l4.2 1-4 1.6"/><circle cx="22.4" cy="13.8" r=".7" fill="currentColor" stroke="none"/><path d="M13 24.5 12 28M16.5 24.8l.5 3.2"/></g></symbol>
+    <symbol id="ic-owl" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="13.5" r="7.8"/><path d="M9.6 9.2 7.5 5.3l4.4 1.6M22.4 9.2l2.1-3.9-4.4 1.6"/><circle cx="13" cy="13" r="1.9"/><circle cx="19" cy="13" r="1.9"/><path d="M15 17l1 1.8 1-1.8"/><path d="M10.5 20.3c0 4.6 2.4 7.2 5.5 7.2s5.5-2.6 5.5-7.2"/></g></symbol>
+    <symbol id="ic-raptor" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.5c4.2-4 9-4.8 12-1.6M28 14.5c-4.2-4-9-4.8-12-1.6"/><path d="M14.5 13.5 16 20l1.5-6.5"/></g></symbol>
+    <symbol id="ic-trail" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 28c8.5-3 1.5-7.5 8-10.5s2-6.5 8-8" stroke-dasharray="3 3.4"/><path d="M23 6.5l4 4M27 6.5l-4 4"/><path d="M7 24.5c1-.8 2-.8 3 0"/></g></symbol>
+    <symbol id="ic-falls" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 6.5h9"/><path d="M9.5 7c-1 4.6.8 6.4-.3 11M13 7c-1 4.6.8 6.4-.3 11M16.5 7c-.6 3-.1 5 .4 7.4"/><path d="M6 22.5c3 2.2 6.5 3 10 3s7-.8 10-3"/><circle cx="21.5" cy="17.5" r=".6" fill="currentColor" stroke="none"/><circle cx="24" cy="20" r=".6" fill="currentColor" stroke="none"/></g></symbol>
+    <symbol id="ic-paddle" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 21.5c4.5 3 18.5 3 23 0-4.5-2.2-18.5-2.2-23 0z"/><circle cx="16" cy="12.5" r="2.4"/><path d="M9 18.5 23.5 9.5"/><ellipse cx="7.6" cy="19.3" rx="1.7" ry="1" transform="rotate(-32 7.6 19.3)"/><path d="M6 27c2.4 1.2 5 1.2 7.4 0M18 27c2.4 1.2 5 1.2 7.4 0"/></g></symbol>
+    <symbol id="ic-swim" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 24c2-2 4-2 6 0s4 2 6 0 4-2 6 0 4 2 6 0"/><circle cx="19.5" cy="14.5" r="2.5"/><path d="M7.5 18.5c3.2-4 6.5-5 10-3"/></g></symbol>
+    <symbol id="ic-spring" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="16" cy="23" rx="9.5" ry="3.4"/><path d="M11 16.5c1.2-2-.8-3.2.3-6M16 16.5c1.2-2-.8-3.2.3-6M21 16.5c1.2-2-.8-3.2.3-6"/></g></symbol>
+    <symbol id="ic-mask" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8.5c4.4 2 9.6 2 14 0v8c0 6-3 10.5-7 10.5s-7-4.5-7-10.5z"/><path d="M12 14.5c1.2-1.2 3-1.2 4.2 0M15.8 14.5c1.2-1.2 3-1.2 4.2 0"/><path d="M13 20.5c2 2 4 2 6 0"/></g></symbol>
+    <symbol id="ic-dive" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="12" width="14.5" height="8.5" rx="4.2"/><path d="M6.5 15.5c-1.8 0-2.8.8-3 2M21 15.5c1.8 0 2.8.8 3 2"/><path d="M25.5 7.5v10.5c0 2-1 3.2-3 3.2"/><circle cx="27.8" cy="5" r="1"/><circle cx="29.5" cy="9.5" r=".7"/></g></symbol>
+    <symbol id="ic-wreck" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21l3.4 5.4h13l3.6-7.4z"/><path d="M17 6.5v12"/><path d="M17 7.5l7 7.5h-7"/><path d="M4 27.5c2.6 1.4 5.4 1.4 8 0M20 27.5c2.6 1.4 5.4 1.4 8 0"/></g></symbol>
+    <symbol id="ic-statue" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 7.5c-2.4.8-3.5 3-3.5 6v7.5c0 2.6 1.4 4.5 4 4.5h4c3 0 5-2 5-5v-6.5c0-4.5-3.5-7.5-9.5-6.5z"/><path d="M14 12.5v4.6c0 .9.8 1.4 2 1.4"/><path d="M13.5 21.5h5"/><path d="M6 4.5c2 1 4 1 6 0s4-1 6 0 4 1 6 0"/></g></symbol>
+    <symbol id="ic-jukung" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 20.5c4.5 3 18.5 3 23 0-3.5-2-19.5-2-23 0z"/><path d="M16 5.5v12.5"/><path d="M16 5.5c5.6 2.6 7.8 8 7 12"/><path d="M7 25.5h6M19 25.5h6M9.5 22.5v3M22.5 22.5v3"/></g></symbol>
+    <symbol id="ic-fish" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 17c3.6-4.6 9.4-6.6 15-5l5.5-3.6-1.6 5.4 1.6 5.4-5.5-3.6c-5.6 1.6-11.4.4-15-4z" transform="translate(0 1)"/><circle cx="9.5" cy="17" r=".8" fill="currentColor" stroke="none"/><path d="M14 13.5c1 1.6 1 3.4 0 5"/></g></symbol>
+    <symbol id="ic-salt" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 24c1.6-7.6 5.6-11.5 8-11.5s6.4 3.9 8 11.5"/><path d="M5.5 24h21"/><circle cx="12" cy="8.5" r=".7" fill="currentColor" stroke="none"/><circle cx="16" cy="6.5" r=".7" fill="currentColor" stroke="none"/><circle cx="20" cy="8.5" r=".7" fill="currentColor" stroke="none"/></g></symbol>
+    <symbol id="ic-surf" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 26C12 15.5 19.5 8.5 26 6c.4 7-5 17-14 21.4z"/><path d="M12.5 22c4-6.5 8.5-11 11.5-13"/><path d="M4 27.5c2 1 4 1 6 0"/></g></symbol>
+    <symbol id="ic-tree" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 27.5V15"/><path d="M16 19.5l-3.5-3M16 17l3-2.6"/><path d="M8.5 14.5c-2.4-5 2.6-9.4 7-8 1.6-2.6 7-2.4 8 .8 4 .6 5.4 5.4 2.6 8-1.2 2.6-4.8 3.6-7.6 2.6-2.8 1.6-8 .8-10-3.4z"/><path d="M10 28h12"/></g></symbol>
+    <symbol id="ic-lizard" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21.5c4 2 6.5.2 8.5-1.8s4.4-4 7.5-4.2c2.8-.2 4.6 1.4 4.6 3.4 0 1.6-1.2 2.6-3 2.6"/><path d="M11.5 20.5l-1.6 3M14.5 18l-1.8-2.8M20 16l1.6 3M22.5 15.6l1.8-2.8"/><circle cx="24.6" cy="17.6" r=".7" fill="currentColor" stroke="none"/></g></symbol>
+    <symbol id="ic-bowl" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16.5h18c0 6-4 9.5-9 9.5s-9-3.5-9-9.5z"/><path d="M19.5 4.5l-5.5 9.5M24 6.5l-7 7.5"/></g></symbol>
+    <symbol id="ic-supertree" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 28V14.5M17.5 28V14.5"/><path d="M16 14.5C10.5 9.5 8.5 8 6 8M16 14.5c-.5-6-1.5-9-2.5-11M16 14.5c1.5-6.5 3.5-9.5 5.5-11M16 14.5c5-5 7.5-6 10-6"/></g></symbol>
+    <symbol id="ic-spark" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 9v14M9 16h14M11.5 11.5l9 9M20.5 11.5l-9 9"/></g></symbol>
+  </defs>
+</svg>
 <div class="progress" aria-hidden="true"></div>
 
 <!-- ============ HERO ============ -->
@@ -437,7 +464,7 @@
         <ul>
           <li>
             <div class="etop"><span class="chip">Kurs · 4 t</span><span class="etime">Laplapan · 08:30–12:30</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🍳</span>Matlagingskurs hos Puspa og Wayan</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-cook"/></svg>Matlagingskurs hos Puspa og Wayan</span>
             <span class="emeta">20 km · ca. 45 min</span>
             <p>Starter på morgenmarkedet i Ubud klokka halv ni, der vi plukker ingrediensene selv. Så til landsbyen Laplapan, der vi maler krydderpastaen for hånd i steinmorter og lager sju–åtte retter fra bunnen. Rundt 250 kr hver.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 20 km, ca. 45 min. Kurset henter oss på hotellet og kjører først til markedet i Ubud, så videre til Laplapan.</p>
@@ -445,7 +472,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Fysisk · halvdag</span><span class="etime">Kintamani → Ubud · fra 07:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🚲</span>Nedoverbakke-sykling fra vulkankanten</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-bike"/></svg>Nedoverbakke-sykling fra vulkankanten</span>
             <span class="emeta">ca. 1 t</span>
             <p>Bil opp til Kintamani med utsikt over Batur-krateret. Derfra 25 kilometer nedover bakveier gjennom risterrasser og landsbyer — nesten bare utforbakke, så det er turen og ikke treningen som er poenget. Lunsj hjemme hos guidens familie til slutt.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> henting på hotellet kl. 07. Ca. 1 t opp til Kintamani i bil, deretter sykkel hele veien ned. De kjører oss tilbake etterpå.</p>
@@ -453,7 +480,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Kurs · 3 t</span><span class="etime">Jl. Hanoman, Ubud</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">💍</span>Lage hver vår sølvring</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-ring"/></svg>Lage hver vår sølvring</span>
             <span class="emeta">14 km · ca. 30 min</span>
             <p>Tradisjonell balinesisk sølvsmedteknikk — sage, file, lodde, polere. Vi designer selv og går ut med en gravert ring hver. Rundt 400 kr hver, inkludert fem gram sølv.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 14 km til Jl. Hanoman i Ubud, ca. 30 min med sjåfør. Kan kombineres med en ettermiddag i byen.</p>
@@ -461,7 +488,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Privat · 2 t</span><span class="etime">Melinggih Kelod · morgen</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🐦</span>Bali-stæren i frihet</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-bird"/></svg>Bali-stæren i frihet</span>
             <span class="emeta">6 km · ca. 15 min</span>
             <p>Bali-stæren er øyas eneste endemiske virveldyr, og kritisk truet. Begawan Foundation driver avl og utsetting her i landsbyen, og Melinggih Kelod er ett av svært få steder på Bali der arten faktisk flyr fritt. Senteret tar imot besøkende, og det er ingen busser her — som regel går man rundt alene med en fuglevokter.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 6 km, ca. 15 min. Samme landsbydistrikt som hotellet. Besøk avtales på forhånd.</p>
@@ -469,7 +496,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Privat · 3 t</span><span class="etime">Payangan · fra skumring</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🦉</span>Uglesafari etter mørkets frembrudd</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-owl"/></svg>Uglesafari etter mørkets frembrudd</span>
             <span class="emeta">På stedet</span>
             <p>Bali har flere ugler enn folk regner med. Sunda-dvergugle sitter i hagene og langs skogkanten og lar seg finne hvis man vet hvor man skal lytte, tårnugle jakter lavt over risåkrene, og barreulen og natravnene hører man lenge før man ser dem. Guidene kjører rundt i området etter mørket og stopper der det synger. Ta med sterk lykt — det er det folk oftest angrer på at de ikke hadde.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> starter i nærområdet, ofte innen 10 km. Guiden henter på hotellet ved solnedgang. Avtales et par dager før.</p>
@@ -477,7 +504,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv</span><span class="etime">Risåkrene · daggry og skumring</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🦅</span>Svartvingeglenta over risåkrene</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-raptor"/></svg>Svartvingeglenta over risåkrene</span>
             <span class="emeta">På stedet</span>
             <p>En liten hvit rovfugl som står helt stille i lufta over åkrene før den stuper. Den er forutsigbar: samme stolpe, samme jaktfelt, morgen og kveld. For et kamera er den takknemlig — den henger stille lenge nok til at man rekker å stille inn. I februar kommer dessuten kinesisk spurvehauk trekkende gjennom Bali, så det er ekstra rovfugl i lufta akkurat da.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> åkrene begynner rett utenfor porten. Ingen transport, ingen avtale.</p>
@@ -485,7 +512,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Privat · 4 t</span><span class="etime">Penestanan · fra 09:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🐦</span>Fuglevandring med Su</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-bird"/></svg>Fuglevandring med Su</span>
             <span class="emeta">16 km · ca. 35 min</span>
             <p>Su har guidet fuglevandringer rundt Ubud i over tjue år. Fire timer til fots gjennom risåkrene bak Penestanan, og gjerne tretti arter på én morgen — javakongefisker, javaspurv, sunglenteflue og tre slags isfugl. Hun forklarer like mye om plantene og vanningssystemet underveis. Kikkert låner vi. Turen kan bestilles privat for oss to.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 16 km til møtestedet i Ubud, ca. 35 min. Oppmøte kl. 09, lunsj inkludert til slutt.</p>
@@ -493,7 +520,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · 2 t</span><span class="etime">På eiendommen · morgen</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🥾</span>Jungelstien ned til Ayung</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-trail"/></svg>Jungelstien ned til Ayung</span>
             <span class="emeta">På stedet</span>
             <p>Hotellet har sin egen sti gjennom regnskogen ned til elva — 150 høydemeter, bratt nok til å bli svett, og med bambusskog, elvegjel og apekatter i trærne underveis. Ned tar tjue minutter, opp tar førti. Går man klokka sju er man alene, og tåka ligger fortsatt i dalen.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> starter innenfor porten. Ingen transport, ingen guide nødvendig.</p>
@@ -501,7 +528,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Fysisk · halvdag</span><span class="etime">Plaga · fra 08:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">💦</span>Nungnung-fossen</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-falls"/></svg>Nungnung-fossen</span>
             <span class="emeta">25 km · ca. 45 min</span>
             <p>Femti meter fritt fall ned i et jungelgjel, og i regntiden er den så kraftig at man blir gjennomvåt av sprayen lenge før man er framme. Fem hundre trappetrinn ned gjennom skogen, og de samme fem hundre opp igjen — det er nettopp derfor det er så få folk her. Ta med tørt skift.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 25 km nordover mot Bedugul, ca. 45 min med sjåfør. Kombineres godt med en kjøretur videre opp i høyden.</p>
@@ -509,7 +536,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · halvdag</span><span class="etime">Apuan, Bangli · morgen</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">💦</span>Tibumana-fossen</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-falls"/></svg>Tibumana-fossen</span>
             <span class="emeta">28 km · ca. 1 t</span>
             <p>Den stille motsatsen til fossene alle drar til. En enkelt bred stråle ned i et rundt basseng, omkranset av jungelvegger og lianer, og med en liten bro over elva. Man kan svømme helt inn under fallet. Kom før klokka ti, så er dere stort sett alene.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 28 km østover, ca. 1 t med sjåfør. Kan legges på samme dag som Sebatu.</p>
@@ -517,7 +544,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Fysisk · halvdag</span><span class="etime">Ayung-elva · morgen</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🛶</span>Rafting i Ayung-gjuvet</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-paddle"/></svg>Rafting i Ayung-gjuvet</span>
             <span class="emeta">ca. 15–20 min</span>
             <p>Klasse II–III, altså nok fart til å være moro uten å være skummelt. Ni kilometer gjennom en jungelkløft med fossefall og steinrelieffer hugget inn i klippeveggen. Best akkurat i regntiden, når vannstanden er høy.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> nærmeste utsettingssted ligger 15–20 min unna. Hotellet ordner transport begge veier.</p>
@@ -525,7 +552,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Fysisk · 2 t</span><span class="etime">Mas · dagspass</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🏊</span>Baneøkt i 25-meteren på Titi Batu</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-swim"/></svg>Baneøkt i 25-meteren på Titi Batu</span>
             <span class="emeta">18 km · ca. 40 min</span>
             <p>Basseng forbeholdt voksne, laget for lengdesvømming, pluss gym, badstue og isbad. Femten minutter fra Ubud sentrum.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 18 km til Mas, ca. 40 min med sjåfør. Grab kommer ikke opp hit, så vi må avtale henting.</p>
@@ -533,7 +560,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv</span><span class="etime">Sayan · dagspass</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">♨️</span>Kildebassengene på Bambu Indah</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-spring"/></svg>Kildebassengene på Bambu Indah</span>
             <span class="emeta">11 km · ca. 25 min</span>
             <p>John Hardys bambusarkitektur ved Ayung-elva. Dagspasset gir tilgang til de naturlige kildebassengene nede ved elva og til elvewarungen. Vi trenger ikke bo der.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 11 km til Sayan, ca. 25 min med sjåfør. Den fineste kjøreturen i området.</p>
@@ -541,7 +568,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip watch">Se på · 1 t</span><span class="etime">Ubud · om kvelden</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🎭</span>Ogoh-ogoh under bygging</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-mask"/></svg>Ogoh-ogoh under bygging</span>
             <span class="emeta">ca. 25 min</span>
             <p>Gjennom hele februar bygger hvert banjar sine demoner i bambus og papir til Nyepi. Vi stikker innom en landsbyhall og spør pent — ofte får man male et strøk hvis man viser interesse.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> nærmeste banjar ligger i Puhu, få minutter unna. Vil vi se de største, er det 25 min ned til Ubud.</p>
@@ -638,7 +665,7 @@
         <ul>
           <li>
             <div class="etop"><span class="chip">Kurs · 2–3 dager</span><span class="etime">Jemeluk Bay</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🤿</span>Fridykkerkurs nivå 1</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-dive"/></svg>Fridykkerkurs nivå 1</span>
             <span class="emeta">På stedet</span>
             <p>Balis første fridykkersenter, og de underviser like mye i pust og avspenning som i teknikk. Yoga, teori, bassengøkter i 25-meteren på Blue Earth Village og åpent vann i bukta. De fleste kommer ned til 15–20 meter i løpet av kurset. Maks fire elever per instruktør.</p>
             <p class="dist"><b>På Blue Earth Village:</b> skolen holder til på eiendommen og bruker bassenget her. Åpent vann i bukta rett utenfor — vi går.</p>
@@ -646,7 +673,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Kurs · 2 dager</span><span class="etime">Jemeluk · alternativ</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🤿</span>Fridykking i mindre grupper</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-dive"/></svg>Fridykking i mindre grupper</span>
             <span class="emeta">ca. 5 min</span>
             <p>Maks tre elever per instruktør, rett på stranden, med yogashala vendt mot Agung. Litt mindre og mer familiært.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> 5 min å gå langs bukta.</p>
@@ -654,7 +681,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Fysisk · morgen</span><span class="etime">Tulamben · 06:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🚢</span>Svømme ut til Liberty-vraket</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-wreck"/></svg>Svømme ut til Liberty-vraket</span>
             <span class="emeta">18 km · ca. 30 min</span>
             <p>Et 120 meter langt skipsvrak tretti meter fra stranden, fra fem til tretti meters dyp. Toppen nås med snorkel. Vi må være der klokka seks, før dykkebussene fra sør kommer.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> 18 km nordover til Tulamben, ca. 30 min med scooter eller sjåfør. Vi må dra kl. 05:15 for å være der til seks.</p>
@@ -662,7 +689,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · 2 t</span><span class="etime">Jemeluk · morgen eller sen ettermiddag</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🦅</span>Havørn og brahminglente over bukta</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-raptor"/></svg>Havørn og brahminglente over bukta</span>
             <span class="emeta">På stedet</span>
             <p>Amed er et av de beste stedene på Bali for kystrovfugl. Brahminglenta — rustrød kropp, hvitt hode — fisker rett utenfor stranden, og hvitbuket havørn patruljerer klippene med to meters vingespenn. Best når termikken tar seg opp utpå formiddagen, eller i det siste lyset før solnedgang. Man trenger ikke gå noe sted; sett deg på stranden med lang linse og vent.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> stranden nedenfor hotellet. Vil du nærmere klippene, er det 10 min med scooter nordover mot Bunutan.</p>
@@ -670,7 +697,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv</span><span class="etime">Jemeluk Bay · 07:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🗿</span>Undervannsgalleriet</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-statue"/></svg>Undervannsgalleriet</span>
             <span class="emeta">ca. 5 min</span>
             <p>Nedsenkede statuer og en postkasse på tre–fem meters dyp midt i bukta. Ingen sertifikat, ingen båt. Låne maske på hotellet og svømme ut.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> 5 min å gå ned til stranden, så svømmer vi ut. Ingenting annet.</p>
@@ -678,7 +705,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · 3 t</span><span class="etime">Amed · før soloppgang</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🎣</span>Ut med fiskerne i jukung</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-jukung"/></svg>Ut med fiskerne i jukung</span>
             <span class="emeta">På stedet</span>
             <p>De tradisjonelle utriggerbåtene drar ut klokka fem. Flere av fiskerne tar med gjester mot en avtalt sum, og vi får være med å legge ut snørene. Rundt 300–400 kr for båten.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> båtene ligger på stranden rett nedenfor. Vi går ned kl. 04:45.</p>
@@ -686,7 +713,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Privat · halvdag</span><span class="etime">Amed · fra 07:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🐠</span>Egen jukung ut til revene</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-fish"/></svg>Egen jukung ut til revene</span>
             <span class="emeta">På stedet</span>
             <p>I stedet for å bli med på snorkletur med gruppe kan vi leie en jukung med fisker for oss selv. Da bestemmer vi tempoet og stoppene — Lipah-bukta, det japanske vraket ved Banyuning på seks–tolv meter, og revkantene man ikke når fra land. Vi er alene i vannet før klokka ni.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> båten ligger på stranden rett nedenfor. Rundt 400–600 kr for båt og fører en formiddag.</p>
@@ -694,7 +721,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · 2 t</span><span class="etime">Amed · formiddag</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🧂</span>Saltproduksjon på gamlemåten</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-salt"/></svg>Saltproduksjon på gamlemåten</span>
             <span class="emeta">4 km · ca. 10 min</span>
             <p>Havsalt laget i palmestammer og bambusrenner i generasjoner. Familiene ved stranden tar imot besøkende og lar en gjerne bære sjøvann og skrape salt selv.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> 4 km sørover, ca. 10 min med scooter. Saltmarkene ligger langs kystveien.</p>
@@ -803,7 +830,7 @@
         <ul>
           <li>
             <div class="etop"><span class="chip">Kurs · 2 t</span><span class="etime">Padang eller Balangan · morgen</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🏄</span>Surfetime med lokal instruktør</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-surf"/></svg>Surfetime med lokal instruktør</span>
             <span class="emeta">ca. 10–15 min</span>
             <p>Hotellet har egne instruktører og kjører oss ned til den bølgen som passer nivået den dagen. Februar gir mindre bølger på denne siden — faktisk en fordel når man skal lære.</p>
             <p class="dist"><b>Fra S Resorts Hidden Valley:</b> 10–15 min ned til Padang eller Balangan. Hotellets shuttle kjører oss, brett følger med.</p>
@@ -811,7 +838,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Fysisk · 3 t</span><span class="etime">Bukit · fra 06:30</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🥾</span>Klippevandringen til Nyang Nyang</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-trail"/></svg>Klippevandringen til Nyang Nyang</span>
             <span class="emeta">8 km · ca. 15 min</span>
             <p>Langs kalksteinklippene mellom Padang Padang og Nyang Nyang, delvis sti og delvis berg. Ingen skygge, så vi må gå tidlig. Bratt nedstigning og et forlist skip på stranden — og som regel ingen andre folk.</p>
             <p class="dist"><b>Fra S Resorts Hidden Valley:</b> 8 km til Padang Padang, ca. 15 min. Shuttlen går fra morgenen — vi tar den første.</p>
@@ -819,7 +846,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · 2 t</span><span class="etime">Jimbaran · 06:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🐟</span>Kjøpe fisken selv og få den grillet</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-fish"/></svg>Kjøpe fisken selv og få den grillet</span>
             <span class="emeta">17 km · ca. 30 min</span>
             <p>På morgenmarkedet i Kedonganan er hele nattas fangst på land klokka seks. Vi velger fisken selv, forhandler, og tar den med til en warung ved siden av — de griller den for en liten sum.</p>
             <p class="dist"><b>Fra S Resorts Hidden Valley:</b> 17 km til Kedonganan, ca. 30 min med sjåfør. Må avtales kvelden før, siden vi drar kl. 05:30.</p>
@@ -827,7 +854,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip watch">Se på · 1 t</span><span class="etime">Uluwatu · solnedgang</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🎭</span>Kecak ved tempelet</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-mask"/></svg>Kecak ved tempelet</span>
             <span class="emeta">7 km · ca. 15 min</span>
             <p>Sytti menn som synger uten instrumenter, på klippekanten mens sola går ned. Billett på forhånd, og kom en time før for å få plass ytterst.</p>
             <p class="dist"><b>Fra S Resorts Hidden Valley:</b> 7 km til Uluwatu-tempelet, ca. 15 min. Regn ekstra tid — det er kø i solnedgangen.</p>
@@ -923,7 +950,7 @@
         <ul>
           <li>
             <div class="etop"><span class="chip">Kurs · 4 t</span><span class="etime">Laplapan · 08:30–12:30</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🍳</span>Matlagingskurs hos Puspa og Wayan</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-cook"/></svg>Matlagingskurs hos Puspa og Wayan</span>
             <span class="emeta">20 km · ca. 45 min</span>
             <p>Morgenmarkedet først, så landsbyen Laplapan der vi maler krydderpastaen for hånd og lager sju–åtte retter fra bunnen. Rundt 250 kr hver.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 20 km, ca. 45 min. Kurset henter oss på hotellet og kjører først til markedet i Ubud, så videre til Laplapan.</p>
@@ -931,7 +958,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Fysisk · halvdag</span><span class="etime">Kintamani → Ubud · fra 07:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🚲</span>Nedoverbakke-sykling fra vulkankanten</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-bike"/></svg>Nedoverbakke-sykling fra vulkankanten</span>
             <span class="emeta">ca. 1 t</span>
             <p>25 kilometer nedover bakveier gjennom risterrasser og landsbyer, med lunsj hjemme hos guidens familie til slutt.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> henting på hotellet kl. 07. Ca. 1 t opp til Kintamani i bil, deretter sykkel hele veien ned. De kjører oss tilbake etterpå.</p>
@@ -939,7 +966,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Kurs · 3 t</span><span class="etime">Jl. Hanoman, Ubud</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">💍</span>Lage hver vår sølvring</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-ring"/></svg>Lage hver vår sølvring</span>
             <span class="emeta">14 km · ca. 30 min</span>
             <p>Sage, file, lodde, polere. Vi designer selv og går ut med en gravert ring hver. Rundt 400 kr hver.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 14 km til Jl. Hanoman i Ubud, ca. 30 min med sjåfør. Kan kombineres med en ettermiddag i byen.</p>
@@ -947,7 +974,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Privat · 2 t</span><span class="etime">Melinggih Kelod · morgen</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🐦</span>Bali-stæren i frihet</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-bird"/></svg>Bali-stæren i frihet</span>
             <span class="emeta">6 km · ca. 15 min</span>
             <p>Bali-stæren er øyas eneste endemiske virveldyr, og kritisk truet. Begawan Foundation driver avl og utsetting her i landsbyen, og Melinggih Kelod er ett av svært få steder på Bali der arten faktisk flyr fritt. Senteret tar imot besøkende, og det er ingen busser her — som regel går man rundt alene med en fuglevokter.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 6 km, ca. 15 min. Samme landsbydistrikt som hotellet. Besøk avtales på forhånd.</p>
@@ -955,7 +982,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Privat · 3 t</span><span class="etime">Payangan · fra skumring</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🦉</span>Uglesafari etter mørkets frembrudd</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-owl"/></svg>Uglesafari etter mørkets frembrudd</span>
             <span class="emeta">På stedet</span>
             <p>Bali har flere ugler enn folk regner med. Sunda-dvergugle sitter i hagene og langs skogkanten og lar seg finne hvis man vet hvor man skal lytte, tårnugle jakter lavt over risåkrene, og barreulen og natravnene hører man lenge før man ser dem. Guidene kjører rundt i området etter mørket og stopper der det synger. Ta med sterk lykt — det er det folk oftest angrer på at de ikke hadde.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> starter i nærområdet, ofte innen 10 km. Guiden henter på hotellet ved solnedgang. Avtales et par dager før.</p>
@@ -963,7 +990,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv</span><span class="etime">Risåkrene · daggry og skumring</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🦅</span>Svartvingeglenta over risåkrene</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-raptor"/></svg>Svartvingeglenta over risåkrene</span>
             <span class="emeta">På stedet</span>
             <p>En liten hvit rovfugl som står helt stille i lufta over åkrene før den stuper. Den er forutsigbar: samme stolpe, samme jaktfelt, morgen og kveld. For et kamera er den takknemlig — den henger stille lenge nok til at man rekker å stille inn. I februar kommer dessuten kinesisk spurvehauk trekkende gjennom Bali, så det er ekstra rovfugl i lufta akkurat da.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> åkrene begynner rett utenfor porten. Ingen transport, ingen avtale.</p>
@@ -971,7 +998,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Privat · 4 t</span><span class="etime">Penestanan · fra 09:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🐦</span>Fuglevandring med Su</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-bird"/></svg>Fuglevandring med Su</span>
             <span class="emeta">16 km · ca. 35 min</span>
             <p>Su har guidet fuglevandringer rundt Ubud i over tjue år. Fire timer til fots gjennom risåkrene bak Penestanan, og gjerne tretti arter på én morgen — javakongefisker, javaspurv, sunglenteflue og tre slags isfugl. Hun forklarer like mye om plantene og vanningssystemet underveis. Kikkert låner vi. Turen kan bestilles privat for oss to.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 16 km til møtestedet i Ubud, ca. 35 min. Oppmøte kl. 09, lunsj inkludert til slutt.</p>
@@ -979,7 +1006,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · 2 t</span><span class="etime">På eiendommen · morgen</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🥾</span>Jungelstien ned til Ayung</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-trail"/></svg>Jungelstien ned til Ayung</span>
             <span class="emeta">På stedet</span>
             <p>Hotellet har sin egen sti gjennom regnskogen ned til elva — 150 høydemeter, bratt nok til å bli svett, og med bambusskog, elvegjel og apekatter i trærne underveis. Ned tar tjue minutter, opp tar førti. Går man klokka sju er man alene, og tåka ligger fortsatt i dalen.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> starter innenfor porten. Ingen transport, ingen guide nødvendig.</p>
@@ -987,7 +1014,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Fysisk · halvdag</span><span class="etime">Plaga · fra 08:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">💦</span>Nungnung-fossen</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-falls"/></svg>Nungnung-fossen</span>
             <span class="emeta">25 km · ca. 45 min</span>
             <p>Femti meter fritt fall ned i et jungelgjel, og i regntiden er den så kraftig at man blir gjennomvåt av sprayen lenge før man er framme. Fem hundre trappetrinn ned gjennom skogen, og de samme fem hundre opp igjen — det er nettopp derfor det er så få folk her. Ta med tørt skift.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 25 km nordover mot Bedugul, ca. 45 min med sjåfør. Kombineres godt med en kjøretur videre opp i høyden.</p>
@@ -995,7 +1022,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · halvdag</span><span class="etime">Apuan, Bangli · morgen</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">💦</span>Tibumana-fossen</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-falls"/></svg>Tibumana-fossen</span>
             <span class="emeta">28 km · ca. 1 t</span>
             <p>Den stille motsatsen til fossene alle drar til. En enkelt bred stråle ned i et rundt basseng, omkranset av jungelvegger og lianer, og med en liten bro over elva. Man kan svømme helt inn under fallet. Kom før klokka ti, så er dere stort sett alene.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 28 km østover, ca. 1 t med sjåfør. Kan legges på samme dag som Sebatu.</p>
@@ -1003,7 +1030,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Fysisk · halvdag</span><span class="etime">Ayung-elva · morgen</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🛶</span>Rafting i Ayung-gjuvet</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-paddle"/></svg>Rafting i Ayung-gjuvet</span>
             <span class="emeta">ca. 15–20 min</span>
             <p>Klasse II–III gjennom en jungelkløft med fossefall og steinrelieffer i klippeveggen.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> nærmeste utsettingssted ligger 15–20 min unna. Hotellet ordner transport begge veier.</p>
@@ -1011,7 +1038,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip watch">Se på · 1 t</span><span class="etime">Ubud · om kvelden</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🎭</span>Ogoh-ogoh under bygging</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-mask"/></svg>Ogoh-ogoh under bygging</span>
             <span class="emeta">ca. 25 min</span>
             <p>Hvert banjar bygger sine demoner i bambus og papir gjennom hele februar.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> nærmeste banjar ligger i Puhu, få minutter unna. Vil vi se de største, er det 25 min ned til Ubud.</p>
@@ -1089,7 +1116,7 @@
         <ul>
           <li>
             <div class="etop"><span class="chip">Kurs · 1 dag</span><span class="etime">Jemeluk Bay</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🤿</span>Introdag i fridykking</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-dive"/></svg>Introdag i fridykking</span>
             <span class="emeta">På stedet</span>
             <p>Én dag med pusteteknikk, avspenning og bassengøkt før vi går ut i bukta. De fleste kommer ned til ti meter samme dag.</p>
             <p class="dist"><b>På Blue Earth Village:</b> alt skjer på og rett utenfor eiendommen. Ingen transport.</p>
@@ -1097,7 +1124,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Fysisk · morgen</span><span class="etime">Tulamben · 06:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🚢</span>Svømme ut til Liberty-vraket</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-wreck"/></svg>Svømme ut til Liberty-vraket</span>
             <span class="emeta">18 km · ca. 30 min</span>
             <p>Et 120 meter langt skipsvrak tretti meter fra stranden. Toppen nås med snorkel.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> 18 km nordover til Tulamben, ca. 30 min med scooter eller sjåfør. Vi må dra kl. 05:15 for å være der til seks.</p>
@@ -1105,7 +1132,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · 2 t</span><span class="etime">Jemeluk · morgen eller sen ettermiddag</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🦅</span>Havørn og brahminglente over bukta</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-raptor"/></svg>Havørn og brahminglente over bukta</span>
             <span class="emeta">På stedet</span>
             <p>Amed er et av de beste stedene på Bali for kystrovfugl. Brahminglenta — rustrød kropp, hvitt hode — fisker rett utenfor stranden, og hvitbuket havørn patruljerer klippene med to meters vingespenn. Best når termikken tar seg opp utpå formiddagen, eller i det siste lyset før solnedgang. Man trenger ikke gå noe sted; sett deg på stranden med lang linse og vent.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> stranden nedenfor hotellet. Vil du nærmere klippene, er det 10 min med scooter nordover mot Bunutan.</p>
@@ -1113,7 +1140,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv</span><span class="etime">Jemeluk Bay · 07:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🗿</span>Undervannsgalleriet</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-statue"/></svg>Undervannsgalleriet</span>
             <span class="emeta">ca. 5 min</span>
             <p>Statuer og en postkasse på tre–fem meters dyp midt i bukta.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> 5 min å gå ned til stranden, så svømmer vi ut. Ingenting annet.</p>
@@ -1121,7 +1148,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · 3 t</span><span class="etime">Amed · før soloppgang</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🎣</span>Ut med fiskerne i jukung</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-jukung"/></svg>Ut med fiskerne i jukung</span>
             <span class="emeta">På stedet</span>
             <p>Utriggerbåtene drar ut klokka fem. Vi får være med å legge ut snørene. Rundt 300–400 kr for båten.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> båtene ligger på stranden rett nedenfor. Vi går ned kl. 04:45.</p>
@@ -1129,7 +1156,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Privat · halvdag</span><span class="etime">Amed · fra 07:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🐠</span>Egen jukung ut til revene</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-fish"/></svg>Egen jukung ut til revene</span>
             <span class="emeta">På stedet</span>
             <p>I stedet for å bli med på snorkletur med gruppe kan vi leie en jukung med fisker for oss selv. Da bestemmer vi tempoet og stoppene — Lipah-bukta, det japanske vraket ved Banyuning på seks–tolv meter, og revkantene man ikke når fra land. Vi er alene i vannet før klokka ni.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> båten ligger på stranden rett nedenfor. Rundt 400–600 kr for båt og fører en formiddag.</p>
@@ -1255,7 +1282,7 @@
         <ul>
           <li>
             <div class="etop"><span class="chip">Kurs · 4 t</span><span class="etime">Laplapan · 08:30–12:30</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🍳</span>Matlagingskurs hos Puspa og Wayan</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-cook"/></svg>Matlagingskurs hos Puspa og Wayan</span>
             <span class="emeta">20 km · ca. 45 min</span>
             <p>Morgenmarkedet først, så landsbyen Laplapan der vi maler krydderpastaen for hånd og lager sju–åtte retter fra bunnen.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 20 km, ca. 45 min. Kurset henter oss på hotellet og kjører først til markedet i Ubud, så videre til Laplapan.</p>
@@ -1263,7 +1290,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Fysisk · halvdag</span><span class="etime">Kintamani → Ubud · fra 07:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🚲</span>Nedoverbakke-sykling fra vulkankanten</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-bike"/></svg>Nedoverbakke-sykling fra vulkankanten</span>
             <span class="emeta">ca. 1 t</span>
             <p>25 kilometer nedover bakveier gjennom risterrasser og landsbyer, med lunsj hos guidens familie.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> henting på hotellet kl. 07. Ca. 1 t opp til Kintamani i bil, deretter sykkel hele veien ned. De kjører oss tilbake etterpå.</p>
@@ -1271,7 +1298,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Kurs · 3 t</span><span class="etime">Jl. Hanoman, Ubud</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">💍</span>Lage hver vår sølvring</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-ring"/></svg>Lage hver vår sølvring</span>
             <span class="emeta">14 km · ca. 30 min</span>
             <p>Tre timer med sag, fil og loddebrenner, og en gravert ring hver til slutt.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 14 km til Jl. Hanoman i Ubud, ca. 30 min med sjåfør. Kan kombineres med en ettermiddag i byen.</p>
@@ -1279,7 +1306,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Privat · 2 t</span><span class="etime">Melinggih Kelod · morgen</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🐦</span>Bali-stæren i frihet</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-bird"/></svg>Bali-stæren i frihet</span>
             <span class="emeta">6 km · ca. 15 min</span>
             <p>Bali-stæren er øyas eneste endemiske virveldyr, og kritisk truet. Begawan Foundation driver avl og utsetting her i landsbyen, og Melinggih Kelod er ett av svært få steder på Bali der arten faktisk flyr fritt. Senteret tar imot besøkende, og det er ingen busser her — som regel går man rundt alene med en fuglevokter.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 6 km, ca. 15 min. Samme landsbydistrikt som hotellet. Besøk avtales på forhånd.</p>
@@ -1287,7 +1314,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Privat · 3 t</span><span class="etime">Payangan · fra skumring</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🦉</span>Uglesafari etter mørkets frembrudd</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-owl"/></svg>Uglesafari etter mørkets frembrudd</span>
             <span class="emeta">På stedet</span>
             <p>Bali har flere ugler enn folk regner med. Sunda-dvergugle sitter i hagene og langs skogkanten og lar seg finne hvis man vet hvor man skal lytte, tårnugle jakter lavt over risåkrene, og barreulen og natravnene hører man lenge før man ser dem. Guidene kjører rundt i området etter mørket og stopper der det synger. Ta med sterk lykt — det er det folk oftest angrer på at de ikke hadde.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> starter i nærområdet, ofte innen 10 km. Guiden henter på hotellet ved solnedgang. Avtales et par dager før.</p>
@@ -1295,7 +1322,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv</span><span class="etime">Risåkrene · daggry og skumring</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🦅</span>Svartvingeglenta over risåkrene</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-raptor"/></svg>Svartvingeglenta over risåkrene</span>
             <span class="emeta">På stedet</span>
             <p>En liten hvit rovfugl som står helt stille i lufta over åkrene før den stuper. Den er forutsigbar: samme stolpe, samme jaktfelt, morgen og kveld. For et kamera er den takknemlig — den henger stille lenge nok til at man rekker å stille inn. I februar kommer dessuten kinesisk spurvehauk trekkende gjennom Bali, så det er ekstra rovfugl i lufta akkurat da.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> åkrene begynner rett utenfor porten. Ingen transport, ingen avtale.</p>
@@ -1303,7 +1330,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Privat · 4 t</span><span class="etime">Penestanan · fra 09:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🐦</span>Fuglevandring med Su</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-bird"/></svg>Fuglevandring med Su</span>
             <span class="emeta">16 km · ca. 35 min</span>
             <p>Su har guidet fuglevandringer rundt Ubud i over tjue år. Fire timer til fots gjennom risåkrene bak Penestanan, og gjerne tretti arter på én morgen — javakongefisker, javaspurv, sunglenteflue og tre slags isfugl. Hun forklarer like mye om plantene og vanningssystemet underveis. Kikkert låner vi. Turen kan bestilles privat for oss to.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 16 km til møtestedet i Ubud, ca. 35 min. Oppmøte kl. 09, lunsj inkludert til slutt.</p>
@@ -1311,7 +1338,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · 2 t</span><span class="etime">På eiendommen · morgen</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🥾</span>Jungelstien ned til Ayung</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-trail"/></svg>Jungelstien ned til Ayung</span>
             <span class="emeta">På stedet</span>
             <p>Hotellet har sin egen sti gjennom regnskogen ned til elva — 150 høydemeter, bratt nok til å bli svett, og med bambusskog, elvegjel og apekatter i trærne underveis. Ned tar tjue minutter, opp tar førti. Går man klokka sju er man alene, og tåka ligger fortsatt i dalen.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> starter innenfor porten. Ingen transport, ingen guide nødvendig.</p>
@@ -1319,7 +1346,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Fysisk · halvdag</span><span class="etime">Plaga · fra 08:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">💦</span>Nungnung-fossen</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-falls"/></svg>Nungnung-fossen</span>
             <span class="emeta">25 km · ca. 45 min</span>
             <p>Femti meter fritt fall ned i et jungelgjel, og i regntiden er den så kraftig at man blir gjennomvåt av sprayen lenge før man er framme. Fem hundre trappetrinn ned gjennom skogen, og de samme fem hundre opp igjen — det er nettopp derfor det er så få folk her. Ta med tørt skift.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 25 km nordover mot Bedugul, ca. 45 min med sjåfør. Kombineres godt med en kjøretur videre opp i høyden.</p>
@@ -1327,7 +1354,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · halvdag</span><span class="etime">Apuan, Bangli · morgen</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">💦</span>Tibumana-fossen</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-falls"/></svg>Tibumana-fossen</span>
             <span class="emeta">28 km · ca. 1 t</span>
             <p>Den stille motsatsen til fossene alle drar til. En enkelt bred stråle ned i et rundt basseng, omkranset av jungelvegger og lianer, og med en liten bro over elva. Man kan svømme helt inn under fallet. Kom før klokka ti, så er dere stort sett alene.</p>
             <p class="dist"><b>Fra Padma Resort Ubud:</b> 28 km østover, ca. 1 t med sjåfør. Kan legges på samme dag som Sebatu.</p>
@@ -1404,7 +1431,7 @@
         <ul>
           <li>
             <div class="etop"><span class="chip">Kurs · 2–3 dager</span><span class="etime">Jemeluk Bay</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🤿</span>Fridykkerkurs nivå 1</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-dive"/></svg>Fridykkerkurs nivå 1</span>
             <span class="emeta">På stedet</span>
             <p>Yoga, teori, bassengøkter i 25-meteren på Blue Earth Village og åpent vann i bukta. De fleste kommer ned til 15–20 meter.</p>
             <p class="dist"><b>På Blue Earth Village:</b> skolen holder til på eiendommen og bruker bassenget her. Åpent vann i bukta rett utenfor — vi går.</p>
@@ -1412,7 +1439,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Fysisk · morgen</span><span class="etime">Tulamben · 06:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🚢</span>Svømme ut til Liberty-vraket</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-wreck"/></svg>Svømme ut til Liberty-vraket</span>
             <span class="emeta">18 km · ca. 30 min</span>
             <p>120 meter langt skipsvrak tretti meter fra stranden, fra fem til tretti meters dyp.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> 18 km nordover til Tulamben, ca. 30 min med scooter eller sjåfør. Vi må dra kl. 05:15 for å være der til seks.</p>
@@ -1420,7 +1447,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · 2 t</span><span class="etime">Jemeluk · morgen eller sen ettermiddag</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🦅</span>Havørn og brahminglente over bukta</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-raptor"/></svg>Havørn og brahminglente over bukta</span>
             <span class="emeta">På stedet</span>
             <p>Amed er et av de beste stedene på Bali for kystrovfugl. Brahminglenta — rustrød kropp, hvitt hode — fisker rett utenfor stranden, og hvitbuket havørn patruljerer klippene med to meters vingespenn. Best når termikken tar seg opp utpå formiddagen, eller i det siste lyset før solnedgang. Man trenger ikke gå noe sted; sett deg på stranden med lang linse og vent.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> stranden nedenfor hotellet. Vil du nærmere klippene, er det 10 min med scooter nordover mot Bunutan.</p>
@@ -1428,7 +1455,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · 3 t</span><span class="etime">Amed · før soloppgang</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🎣</span>Ut med fiskerne i jukung</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-jukung"/></svg>Ut med fiskerne i jukung</span>
             <span class="emeta">På stedet</span>
             <p>Utriggerbåtene drar ut klokka fem, og flere av fiskerne tar med gjester. Rundt 300–400 kr for båten.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> båtene ligger på stranden rett nedenfor. Vi går ned kl. 04:45.</p>
@@ -1436,7 +1463,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Privat · halvdag</span><span class="etime">Amed · fra 07:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🐠</span>Egen jukung ut til revene</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-fish"/></svg>Egen jukung ut til revene</span>
             <span class="emeta">På stedet</span>
             <p>I stedet for å bli med på snorkletur med gruppe kan vi leie en jukung med fisker for oss selv. Da bestemmer vi tempoet og stoppene — Lipah-bukta, det japanske vraket ved Banyuning på seks–tolv meter, og revkantene man ikke når fra land. Vi er alene i vannet før klokka ni.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> båten ligger på stranden rett nedenfor. Rundt 400–600 kr for båt og fører en formiddag.</p>
@@ -1444,7 +1471,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · 2 t</span><span class="etime">Amed · formiddag</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🧂</span>Saltproduksjon på gamlemåten</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-salt"/></svg>Saltproduksjon på gamlemåten</span>
             <span class="emeta">4 km · ca. 10 min</span>
             <p>Havsalt laget i palmestammer og bambusrenner. Familiene lar en gjerne bære sjøvann og skrape salt selv.</p>
             <p class="dist"><b>Fra Blue Earth Village:</b> 4 km sørover, ca. 10 min med scooter. Saltmarkene ligger langs kystveien.</p>
@@ -1522,7 +1549,7 @@
         <ul>
           <li>
             <div class="etop"><span class="chip">Fysisk · 4 t</span><span class="etime">Pulau Ubin · morgen</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🛶</span>Kajakk gjennom mangroveskogen</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-paddle"/></svg>Kajakk gjennom mangroveskogen</span>
             <span class="emeta">ca. 1 t 15</span>
             <p>Ti minutter med bumboat fra Changi, så ut i tandemkajakk. En kort åpen strekning før vi padler inn i mangrovekanalene, der det er isfugler, hornfugler, havørn og varaner. Ingen erfaring nødvendig, alt utstyr følger med.</p>
             <p class="dist city"><b>Fra PARKROYAL Pickering:</b> ca. 1 t 15. MRT fra Chinatown til Tanah Merah, buss 2 til Changi Point, så bumboat 10 min over til Ubin.</p>
@@ -1530,7 +1557,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Fysisk · 3 t</span><span class="etime">Pulau Ubin · etter kajakken</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🚲</span>Sykle rundt den siste kampong-øya</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-bike"/></svg>Sykle rundt den siste kampong-øya</span>
             <span class="emeta">Samme vei som kajakken</span>
             <p>Sykkelutleie ved brygga, rundt 100 kr for dagen. Grusveier gjennom granittbrudd, mangrover og trehus, med villsvin i veikanten og makaker i trærne.</p>
             <p class="dist city"><b>Fra PARKROYAL Pickering:</b> samme vei som kajakken. Sykler leies rett ved brygga på Ubin, så de to henger naturlig sammen.</p>
@@ -1538,7 +1565,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Fysisk · 4 t</span><span class="etime">MacRitchie · fra 08:00</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🌳</span>TreeTop Walk gjennom regnskogen</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-tree"/></svg>TreeTop Walk gjennom regnskogen</span>
             <span class="emeta">5 km · ca. 40 min</span>
             <p>En 250 meter lang hengebro tjuefem meter over bakken, mellom de to høyeste punktene i naturreservatet. Regn 4,5 kilometer hver vei fra hovedinngangen. Makaker, varaner og over hundre fuglearter. Gratis. Stengt på mandager.</p>
             <p class="dist city"><b>Fra PARKROYAL Pickering:</b> ca. 40 min med MRT og buss til MacRitchie. Derfra 4,5 km å gå hver vei inne i reservatet.</p>
@@ -1546,7 +1573,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · 3 t</span><span class="etime">Pulau Ubin · tidlig morgen</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🦎</span>Hornfugler, havørn og varaner på Ubin</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-lizard"/></svg>Hornfugler, havørn og varaner på Ubin</span>
             <span class="emeta">ca. 1 t 15</span>
             <p>Ubin er den enkleste plassen i Singapore å få store fugler på bildet. Orientalsk nesehornfugl sitter åpent i trærne langs grusveiene, hvitbuket havørn og brahminglente kretser over mudderflatene ved Chek Jawa, og vannvaraner på halvannen meter krysser stien uten å bry seg om folk. Alt sammen innen sykkelavstand fra brygga, og nesten ingen andre ute før klokka ni.</p>
             <p class="dist city"><b>Fra PARKROYAL Pickering:</b> samme vei som kajakken — MRT, buss 2 og bumboat, ca. 1 t 15. Legg fugleturen først på dagen, kajakken etterpå.</p>
@@ -1554,7 +1581,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip">Gjør selv · 2 t</span><span class="etime">Tiong Bahru · lunsj</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🍜</span>Spise oss gjennom et hawker-senter</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-bowl"/></svg>Spise oss gjennom et hawker-senter</span>
             <span class="emeta">2 km · ca. 12 min</span>
             <p>Vi hopper over de kjente. Tiong Bahru Market er der byen selv spiser, midt i det fineste boligstrøket fra 1930-tallet. Regn 60–100 kr for to.</p>
             <p class="dist city"><b>Fra PARKROYAL Pickering:</b> 2 km til Tiong Bahru, ca. 12 min med MRT eller 25 min å gå.</p>
@@ -1562,7 +1589,7 @@
           </li>
           <li>
             <div class="etop"><span class="chip watch">Se på · 1 t</span><span class="etime">Marina Bay · 19:45</span></div>
-            <span class="ename"><span class="eico" aria-hidden="true">🌺</span>Gardens by the Bay</span>
+            <span class="ename"><svg class="eico" aria-hidden="true"><use href="#ic-supertree"/></svg>Gardens by the Bay</span>
             <span class="emeta">ca. 10 min</span>
             <p>Turistifisert, men lysshowet i Supertrees er verdt køen, og det er gratis. Passer om kvelden etter en dag ute.</p>
             <p class="dist city"><b>Fra PARKROYAL Pickering:</b> 10 min med Downtown Line til Bayfront, så rett inn i hagen.</p>
